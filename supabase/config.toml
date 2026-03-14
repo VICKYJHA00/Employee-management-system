@@ -1,0 +1,19 @@
+project_id = "thzzwyvxptadtdiblpul"
+
+[functions.get-location]
+verify_jwt = false
+
+[functions.admin-management]
+verify_jwt = false
+
+[functions.send-otp]
+verify_jwt = false
+
+[functions.verify-otp]
+verify_jwt = false
+
+[functions.monthly-attendance-review]
+verify_jwt = false
+
+[functions.auto-absent-check]
+verify_jwt = false
