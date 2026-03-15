@@ -176,6 +176,7 @@ const AdminManagement: React.FC = () => {
       toast({ title: "Error", description: "Password must be at least 6 characters", variant: "destructive" });
       return;
     }
-
+ 
+    
 
 export default EmployeeManagement;
