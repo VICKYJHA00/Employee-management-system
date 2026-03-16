@@ -205,4 +205,28 @@ const AdminManagement: React.FC = () => {
     setPasswordDialogOpen(true);
   };
 
+   const handleToggleActive = async (admin: AdminProfile) => {
+    try {
+      const { error } = await supabase
+        .from('admins')
+        .update({ is_active: !admin.is_active })
+        .eq('id', admin.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Admin ${admin.is_active ? 'deactivated' : 'activated'} successfully`
+      });
+    } catch (error: any) {
+      console.error('Error toggling admin status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update admin status",
+        variant: "destructive"
+      });
+    }
+  };
+
+
 export default EmployeeManagement;
