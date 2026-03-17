@@ -43,3 +43,43 @@ import Overview from '@/pages/Overview';
 import SocialMediaAnalytics from '@/pages/SocialMediaAnalytics'; 
 
 import EmployeeManagement from '@/pages/EmployeeManagement'; 
+
+import Careers from '@/pages/Careers'; 
+
+import CareerApplications from '@/pages/CareerApplications'; 
+
+import EsportsPlayersList from '@/pages/EsportsPlayersList'; 
+
+import EsportsAddPlayer from '@/pages/EsportsAddPlayer'; 
+
+import TechWorkDashboard from '@/pages/TechWorkDashboard'; 
+
+import ContentWorkDashboard from '@/pages/ContentWorkDashboard'; 
+
+import LeaveManagement from '@/pages/LeaveManagement'; 
+
+import AdminEmployeeProfile from '@/pages/AdminEmployeeProfile'; 
+
+import HolidayCalendar from '@/pages/HolidayCalendar'; 
+
+import HRDashboard from '@/pages/HRDashboard'; 
+
+import SettingsPage from '@/pages/SettingsPage'; 
+
+import Announcements from '@/pages/Announcements'; 
+
+import PollsSurveys from '@/pages/PollsSurveys'; 
+
+import KanbanBoard from '@/pages/KanbanBoard'; 
+
+import StandupLogs from '@/pages/StandupLogs'; 
+
+import FeedbackSystem from '@/pages/FeedbackSystem'; 
+
+import TeamEvents from '@/pages/TeamEvents'; 
+
+import PerformanceScores from '@/pages/PerformanceScores'; 
+
+import AdminReport from '@/pages/AdminReport'; 
+
+import BirthdayReminders from '@/pages/BirthdayReminders'; 
