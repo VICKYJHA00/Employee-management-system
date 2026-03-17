@@ -1,31 +1,4 @@
 
-const Dashboard: React.FC = () => {
-  const navigate = useNavigate();
-  const { user, adminProfile } = useAuth();
-  const isMobile = useIsMobile();
-  const [isLoading, setIsLoading] = useState(true);
-  const [dashboardStats, setDashboardStats] = useState({
-    totalRevenue: 0,
-    activeUsers: 0,
-    pendingOrders: 0,
-    successRate: 0,
-    totalAdmins: 0,
-    activeAdmins: 0,
-    presentToday: 0,
-    attendancePercentage: 0,
-    presentDaysThisMonth: 0,
-    workingDaysInMonth: 0,
-    totalDaysInMonth: 0,
-    totalCertificates: 0,
-    certificatesThisMonth: 0,
-    pendingPayments: 0,
-    verifiedPaymentsToday: 0,
-    totalInternships: 0,
-    completedInternships: 0,
-    totalMessages: 0,
-    monthlyGrowth: 0,
-    esportsUsers: 0,
-    socialUsers: 20,
     totalUsers: 0,
     todayNotifications: 0,
     esportsRevenue: 0,
