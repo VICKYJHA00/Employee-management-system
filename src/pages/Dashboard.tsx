@@ -1097,4 +1097,808 @@ const Dashboard: React.FC = () => {
               <Button onClick={() => window.location.href = '/login'} variant="outline" className="border-white/20">
                 Back to Login
               </Button>
+              </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+ 
+  const displayProfile = adminProfile;
+ 
+  const hasPermission = (module: string) => {
+    const permissions = rolePermissions[displayProfile.role];
+    return permissions.includes('*') || permissions.includes(module);
+  };
+ 
+  // ─── MODULE DEFINITIONS ───────────────────────────────────────────────────
+ 
+  const dataEntryCards: (ModuleCard & { visible: boolean })[] = [
+    {
+      title: 'Esports Players',
+      description: 'Add and manage esports tournament players and registrations',
+      iconSrc: '/icons/game.png',
+      route: '/dashboard/esports-players',
+      visible: adminProfile.role === 'super_admin' || adminProfile.role === 'esports_admin',
+      module: 'esports',
+      category: 'Operations',
+      stats: [
+        { label: 'Total Users', value: dashboardStats.esportsUsers },
+        { label: 'Revenue', value: formatCurrency(dashboardStats.esportsRevenue) }
+      ]
+    },
+    {
+      title: 'Social Media Analytics',
+      description: 'Track posts, followers gained, engagement and requests across platforms',
+      iconSrc: '/icons/social-media.png',
+      route: '/dashboard/social-analytics',
+      visible: ['super_admin', 'social_admin', 'content_admin'].includes(adminProfile.role as string),
+      module: 'social',
+      category: 'Analytics',
+      stats: [
+        { label: 'Total Posts', value: dashboardStats.socialPosts },
+        { label: 'Followers +', value: `+${dashboardStats.socialFollowersGained}` }
+      ]
+    },
+    {
+      title: 'Tech Work Dashboard',
+      description: 'Track pages created, bugs fixed, features added and development work',
+      iconSrc: '/icons/trade.png',
+      route: '/dashboard/tech-work',
+      visible: ['super_admin', 'tech_admin'].includes(adminProfile.role as string),
+      module: 'tech',
+      category: 'Operations',
+      stats: [
+        { label: 'Work Logged', value: dashboardStats.techWorkCount },
+        { label: 'Total Hours', value: `${dashboardStats.techTotalHours}h` }
+      ]
+    },
+    {
+      title: 'Content Work Dashboard',
+      description: 'Track posters, images, videos and content created across platforms',
+      iconSrc: '/icons/files.png',
+      route: '/dashboard/content-work',
+      visible: ['super_admin', 'social_admin', 'content_admin'].includes(adminProfile.role as string),
+      module: 'content',
+      category: 'Operations',
+      stats: [
+        { label: 'Content Created', value: dashboardStats.contentCount },
+        { label: 'Platforms', value: dashboardStats.contentPlatforms }
+      ]
+    }
+  ];
+ 
+  const modules: (ModuleCard & { category: string; isNew?: boolean; isFeatured?: boolean })[] = [
+    {
+      title: 'Overview Stats', description: 'Role-specific summary cards showing sales, orders, trades, and performance',
+      iconSrc: '/icons/analytics.png', route: '/dashboard/overview', module: 'analytics',
+      category: 'Analytics', isFeatured: true,
+      stats: [
+        { label: 'Total Revenue', value: formatCurrency(dashboardStats.totalRevenue) },
+        { label: 'Active Users', value: dashboardStats.activeUsers }
+      ]
+    },
+    {
+      title: 'Attendance Tracker', description: 'Mark daily attendance, manage absences with reasons, and view attendance reports',
+      iconSrc: '/icons/attendance.png', route: '/dashboard/attendance', module: '*',
+      badge: 'All Users', category: 'HR',
+      stats: adminProfile?.role === 'super_admin'
+        ? [
+            { label: 'Today Present', value: `${dashboardStats.presentToday}/${dashboardStats.totalAdmins}` },
+            { label: 'Attendance %', value: `${dashboardStats.dailyAdminsPresentPercentage}%` }
+          ]
+        : [
+            { label: 'This Month', value: `${dashboardStats.presentDaysThisMonth}/${dashboardStats.workingDaysInMonth}` },
+            { label: 'Attendance %', value: `${dashboardStats.attendancePercentage}%` }
+          ]
+    },
+    {
+      title: 'Real-Time Team Chat', description: 'WebSocket-powered team communication with file uploads and role-based messaging',
+      iconSrc: '/icons/chat.png', route: '/dashboard/chat', module: '*',
+      badge: 'Live', category: 'Communication',
+      stats: [
+        { label: 'Online', value: dashboardStats.activeAdmins },
+        { label: 'Messages', value: dashboardStats.totalMessages }
+      ]
+    },
+    {
+      title: 'Analytics Dashboard', description: 'Revenue breakdown, earnings graphs, and domain-wise performance analytics',
+      iconSrc: '/icons/stat.png', route: '/dashboard/analytics', module: 'analytics',
+      category: 'Analytics',
+      stats: [
+        { label: 'Monthly Growth', value: `${dashboardStats.monthlyGrowth >= 0 ? '+' : ''}${dashboardStats.monthlyGrowth}%` },
+        { label: 'Total Revenue', value: formatCurrency(dashboardStats.totalRevenue) }
+      ]
+    },
+    {
+      title: 'Payment Verification', description: 'Verify user payments, manage transaction IDs, and export payment reports',
+      iconSrc: '/icons/card.png', route: '/dashboard/payments', module: '*',
+      badge: 'All Users', category: 'Finance',
+      stats: [
+        { label: 'Pending', value: dashboardStats.pendingPayments },
+        { label: 'Verified Today', value: dashboardStats.verifiedPaymentsToday }
+      ]
+    },
+    {
+      title: 'Certificate Manager', description: 'Issue certificates, manage IDs, and provide real-time verification with Certificate ID',
+      iconSrc: '/icons/certificate.png', route: '/dashboard/certificates', module: 'super_admin_only',
+      badge: 'Super Admin', category: 'System',
+      stats: [
+        { label: 'Total Issued', value: dashboardStats.totalCertificates },
+        { label: 'This Month', value: dashboardStats.certificatesThisMonth }
+      ]
+    },
+    {
+      title: 'Internship Tracker', description: 'Manage intern records, track attendance, assign tasks, and monitor progress',
+      iconSrc: '/icons/internship.png', route: '/dashboard/internships', module: 'super_admin_only',
+      badge: 'Super Admin', category: 'HR',
+      stats: [
+        { label: 'Active Interns', value: dashboardStats.totalInternships },
+        { label: 'Completed', value: dashboardStats.completedInternships }
+      ]
+    },
+    {
+      title: 'Admin Management', description: 'Manage admin accounts, assign roles, view activity logs, and reset passwords',
+      iconSrc: '/icons/admin.png', route: '/dashboard/admin-management', module: 'super_admin_only',
+      badge: 'Super Admin', category: 'System',
+      stats: [
+        { label: 'Total Admins', value: dashboardStats.totalAdmins },
+        { label: 'Active', value: dashboardStats.activeAdmins }
+      ]
+    },
+    {
+      title: 'Bulk Upload & Import', description: 'Upload CSV/Excel files for tournaments, stocks, and orders with smart validation',
+      iconSrc: '/icons/files.png', route: '/dashboard/bulk-upload', module: '*', category: 'Operations',
+      stats: [
+        { label: 'Files Uploaded', value: dashboardStats.bulkUploads },
+        { label: 'Success Rate', value: '100%' }
+      ]
+    },
+    {
+      title: 'Notification Center', description: 'Real-time alerts for orders, matches, stocks with role-based filtering',
+      iconSrc: '/icons/active.png', route: '/dashboard/notifications', module: '*',
+      badge: 'Live', category: 'Communication',
+      stats: [
+        { label: 'Unread', value: dashboardStats.todayNotifications },
+        { label: 'Today', value: dashboardStats.todayNotifications }
+      ]
+    },
+    {
+      title: 'File & Media Manager', description: 'Upload tournament posters, certificates, receipts with cloud storage',
+      iconSrc: '/icons/folder.png', route: '/dashboard/files', module: '*', category: 'Operations',
+      stats: [
+        { label: 'Total Files', value: dashboardStats.totalFiles },
+        { label: 'Storage Used', value: '0 GB' }
+      ]
+    },
+    {
+      title: 'Audit Logs', description: 'Track admin actions, login history, and system activity with detailed logs',
+      iconSrc: '/icons/log.png', route: '/dashboard/audit-logs', module: 'super_admin_only',
+      badge: 'Super Admin', category: 'System',
+      stats: [
+        { label: 'Today Actions', value: dashboardStats.todayAuditActions },
+        { label: 'Total Logs', value: dashboardStats.totalAuditLogs }
+      ]
+    },
+    {
+      title: 'Employee Management', description: 'Manage employee records, documents, Aadhar, PAN, offer letters and details',
+      iconSrc: '/icons/admin.png', route: '/dashboard/employees', module: 'super_admin_only',
+      badge: 'Super Admin', category: 'HR',
+      stats: [
+        { label: 'Employees', value: dashboardStats.totalEmployees },
+        { label: 'Active', value: dashboardStats.activeEmployees }
+      ]
+    },
+    {
+      title: 'Career Applications', description: 'View and manage job applications, review candidates and track hiring status',
+      iconSrc: '/icons/internship.png', route: '/dashboard/careers', module: 'super_admin_only',
+      badge: 'Super Admin', category: 'HR',
+      stats: [
+        { label: 'Applications', value: dashboardStats.totalCareerApplications },
+        { label: 'Pending', value: dashboardStats.pendingCareerApplications }
+      ]
+    },
+    {
+      title: 'Leave Management', description: 'Apply for leave, track leave requests and view approval status',
+      iconSrc: '/icons/attendance.png', route: '/dashboard/leave', module: '*',
+      badge: 'All Users', category: 'HR',
+      stats: [
+        { label: 'Requests', value: dashboardStats.leaveRequestsCount },
+        { label: 'Pending', value: dashboardStats.pendingLeaveRequests }
+      ]
+    },
+    {
+      title: 'HR Dashboard', description: 'Access HR functions including employee management, interns, and certificates',
+      iconSrc: '/icons/admin.png', route: '/dashboard/hr', module: 'hr_admin_only',
+      badge: 'HR Admin', category: 'HR',
+      stats: [
+        { label: 'Employees', value: dashboardStats.totalEmployees },
+        { label: 'Interns', value: dashboardStats.totalInternships }
+      ]
+    },
+    {
+      title: 'Holiday Calendar', description: 'Manage company holidays excluded from working days calculation',
+      iconSrc: '/icons/attendance.png', route: '/dashboard/holidays', module: 'super_admin_only',
+      badge: 'Super Admin', category: 'HR',
+      stats: [
+        { label: 'Holidays', value: 0 },
+        { label: 'This Year', value: new Date().getFullYear() }
+      ]
+    },
+    {
+      title: 'Announcements', description: 'Company-wide announcements and important updates for all team members',
+      iconSrc: '/icons/active.png', route: '/dashboard/announcements', module: '*',
+      badge: 'Live', category: 'Communication', isNew: true,
+      stats: [
+        { label: 'Board', value: 'Live' },
+        { label: 'All Roles', value: '✓' }
+      ]
+    },
+    {
+      title: 'Polls & Surveys', description: 'Create polls, gather team opinions, and make data-driven decisions',
+      iconSrc: '/icons/stat.png', route: '/dashboard/polls', module: '*', category: 'Communication',
+      stats: [
+        { label: 'Voting', value: 'Live' },
+        { label: 'Anonymous', value: '✓' }
+      ]
+    },
+    {
+      title: 'Task Board', description: 'Kanban-style task management with assignments, priorities, and due dates',
+      iconSrc: '/icons/trade.png', route: '/dashboard/tasks', module: '*',
+      badge: 'Live', category: 'Core', isNew: true,
+      stats: [
+        { label: 'Kanban', value: '4 Cols' },
+        { label: 'Realtime', value: '✓' }
+      ]
+    },
+    {
+      title: 'Daily Standups', description: 'Quick daily updates — yesterday, today, blockers with mood tracking',
+      iconSrc: '/icons/chat.png', route: '/dashboard/standups', module: '*', category: 'Communication',
+      stats: [
+        { label: 'Daily', value: 'Updates' },
+        { label: 'Mood', value: '✓' }
+      ]
+    },
+    {
+      title: 'Feedback', description: 'Share anonymous or named feedback, suggestions, and bug reports',
+      iconSrc: '/icons/social-media.png', route: '/dashboard/feedback', module: '*', category: 'Communication',
+      stats: [
+        { label: 'System', value: 'Open' },
+        { label: 'Anonymous', value: '✓' }
+      ]
+    },
+    {
+      title: 'Team Events', description: 'Calendar of meetings, trainings, celebrations, and deadlines',
+      iconSrc: '/icons/attendance.png', route: '/dashboard/events', module: '*', category: 'Core',
+      stats: [
+        { label: 'Calendar', value: 'Live' },
+        { label: 'Types', value: '5' }
+      ]
+    },
+    {
+      title: 'Performance Scores', description: 'Auto-calculated performance rankings based on attendance and work logs',
+      iconSrc: '/icons/analytics.png', route: '/dashboard/performance', module: '*',
+      badge: 'Live', category: 'Analytics',
+      stats: [
+        { label: 'Rankings', value: 'Live' },
+        { label: 'Metrics', value: '3' }
+      ]
+    },
+    {
+      title: 'Admin Reports', description: 'Generate detailed per-admin reports with attendance, work logs, and leave data',
+      iconSrc: '/icons/files.png', route: '/dashboard/reports', module: 'super_admin_only',
+      badge: 'Super Admin', category: 'System',
+      stats: [
+        { label: 'Export', value: 'CSV' },
+        { label: 'Detailed', value: '✓' }
+      ]
+    },
+    {
+      title: 'Birthday Reminders', description: 'Never miss a team member\'s birthday — upcoming and today\'s celebrations',
+      iconSrc: '/icons/certificate.png', route: '/dashboard/birthdays', module: '*', category: 'Core', isNew: true,
+      stats: [
+        { label: 'Reminders', value: 'Auto' },
+        { label: 'Team', value: '✓' }
+      ]
+    },
+  ];
+ 
+  const availableModules = modules.filter(module => {
+    if (module.module === '*') return true;
+    if (module.module === 'super_admin_only') return adminProfile.role === 'super_admin';
+    if (module.module === 'hr_admin_only') return ['hr_admin', 'super_admin'].includes(adminProfile.role as string);
+    if (module.module === 'social_admin') return ['social_admin', 'super_admin'].includes(adminProfile.role as string);
+    return hasPermission(module.module);
+  });
+ 
+  const availableDataEntryCards = dataEntryCards.filter(card => card.visible);
+ 
+  const filteredModules = useMemo(() => {
+    return availableModules.filter(m => {
+      const matchesSearch = !moduleSearch || m.title.toLowerCase().includes(moduleSearch.toLowerCase()) ||
+        m.description.toLowerCase().includes(moduleSearch.toLowerCase());
+      const matchesCategory = activeCategory === 'All' || m.category === activeCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [availableModules, moduleSearch, activeCategory]);
+ 
+  // ─── QUICK STATS ──────────────────────────────────────────────────────────
+ 
+  const quickStats: QuickStat[] = [
+    {
+      label: 'Total Revenue', value: formatCurrency(dashboardStats.totalRevenue),
+      icon: IndianRupee, color: 'text-emerald-400', bgColor: 'bg-emerald-400/15',
+      trend: dashboardStats.monthlyGrowth >= 0 ? 'up' : 'down',
+      trendValue: Math.abs(dashboardStats.monthlyGrowth),
+      description: 'Esports + Social combined'
+    },
+    {
+      label: 'Active Users', value: dashboardStats.totalUsers,
+      icon: Users, color: 'text-blue-400', bgColor: 'bg-blue-400/15',
+      trend: 'up', trendValue: 5, description: 'Across all platforms'
+    },
+    {
+      label: 'Pending Payments', value: dashboardStats.pendingPayments,
+      icon: Clock, color: 'text-yellow-400', bgColor: 'bg-yellow-400/15',
+      trend: dashboardStats.pendingPayments > 10 ? 'down' : 'neutral',
+      description: 'Awaiting verification'
+    },
+    {
+      label: 'Certificates Issued', value: dashboardStats.totalCertificates,
+      icon: Award, color: 'text-purple-400', bgColor: 'bg-purple-400/15',
+      trend: 'up', trendValue: dashboardStats.monthlyGrowth,
+      description: `${dashboardStats.certificatesThisMonth} this month`
+    },
+    {
+      label: 'Team Messages', value: dashboardStats.totalMessages,
+      icon: MessageSquare, color: 'text-cyan-400', bgColor: 'bg-cyan-400/15',
+      trend: 'neutral', description: 'Total chat history'
+    },
+    {
+      label: 'Success Rate', value: dashboardStats.successRate, suffix: '%',
+      icon: Target, color: 'text-green-400', bgColor: 'bg-green-400/15',
+      trend: dashboardStats.successRate >= 80 ? 'up' : 'down',
+      description: 'Payment success rate'
+    },
+  ];
+ 
+  // ─── RENDER ACTIVE SECTION ─────────────────────────────────────────────────
+ 
+  const renderActiveSection = () => {
+    if (!activeSection) return null;
+    return (
+      <Card className="mb-8 border-white/15 bg-gradient-to-br from-white/8 to-transparent">
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-primary/15 border border-primary/25 flex items-center justify-center">
+              {activeSection === 'esports' ? <Trophy className="w-4 h-4 text-primary" /> :
+               activeSection === 'social' ? <Globe className="w-4 h-4 text-primary" /> :
+               <Database className="w-4 h-4 text-primary" />}
+            </div>
+            {activeSection === 'esports' && 'Esports Players Management'}
+            {activeSection === 'social' && 'Social Media Orders'}
+          </CardTitle>
+          <Button variant="outline" size="sm" onClick={() => { setActiveSection(null); setEditingItem(null); }}
+            className="h-8 border-white/15 hover:border-red-400/30 hover:text-red-400">
+            <X className="h-3.5 w-3.5" />
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {activeSection === 'esports' && (
+            <EsportsPlayerForm
+              onPlayerAdded={() => { fetchRoleSpecificData(); fetchRealDashboardStats(); }}
+              editingPlayer={editingItem?.type === 'esports' ? editingItem : undefined}
+              onCancelEdit={() => setEditingItem(null)}
+            />
+          )}
+          {activeSection === 'social' && (
+            <SocialMediaOrderForm
+              onOrderAdded={() => { fetchRoleSpecificData(); fetchRealDashboardStats(); }}
+              editingOrder={editingItem?.type === 'social' ? editingItem : undefined}
+              onCancelEdit={() => setEditingItem(null)}
+            />
+          )}
+          <DataTable
+            activeData={activeData} activeSection={activeSection}
+            editingItem={editingItem} setEditingItem={setEditingItem}
+            handleDelete={handleDelete}
+          />
+        </CardContent>
+      </Card>
+    );
+  };
+ 
+  // ─── MOBILE ───────────────────────────────────────────────────────────────
+ 
+  if (isMobile) {
+    return (
+      <>
+        <Header />
+        <MobileDashboard adminProfile={adminProfile} dashboardStats={dashboardStats} />
+      </>
+    );
+  }
+ 
+  // ─── MAIN RENDER ──────────────────────────────────────────────────────────
+ 
+  return (
+    <TooltipProvider>
+      <>
+        <Header />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-screen-2xl">
+ 
+          {/* ── Welcome Banner ─────────────────────────────────────────────── */}
+          <WelcomeBanner name={displayProfile.name} role={displayProfile.role} />
+ 
+          {/* ── Quick Actions Bar ──────────────────────────────────────────── */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-primary" />
+                <span className="text-sm font-semibold text-foreground">Quick Actions</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <button
+                  onClick={handleManualRefresh}
+                  className={cn("flex items-center gap-1 hover:text-foreground transition-colors", isRefreshing && "animate-spin")}
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
+                <span>Updated {format(lastRefreshed, 'h:mm:ss a')}</span>
+              </div>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <QuickActionButton icon={Calendar} label="Attendance" onClick={() => navigate('/dashboard/attendance')} color="blue" />
+              <QuickActionButton icon={MessageSquare} label="Chat" onClick={() => navigate('/dashboard/chat')} color="green" badge={dashboardStats.todayNotifications > 0 ? dashboardStats.todayNotifications : undefined} />
+              <QuickActionButton icon={IndianRupee} label="Payments" onClick={() => navigate('/dashboard/payments')} color="yellow" badge={dashboardStats.pendingPayments > 0 ? dashboardStats.pendingPayments : undefined} />
+              <QuickActionButton icon={Bell} label="Alerts" onClick={() => navigate('/dashboard/notifications')} color="purple" badge={dashboardStats.todayNotifications > 0 ? dashboardStats.todayNotifications : undefined} />
+              <QuickActionButton icon={BarChart3} label="Analytics" onClick={() => navigate('/dashboard/analytics')} color="cyan" />
+              {adminProfile.role === 'super_admin' && (
+                <>
+                  <QuickActionButton icon={Users} label="Admins" onClick={() => navigate('/dashboard/admin-management')} color="red" />
+                  <QuickActionButton icon={Award} label="Certs" onClick={() => navigate('/dashboard/certificates')} color="orange" />
+                  <QuickActionButton icon={Shield} label="Audit" onClick={() => navigate('/dashboard/audit-logs')} color="slate" />
+                </>
+              )}
+            </div>
+          </div>
+ 
+          {/* ── Key Metrics Grid ───────────────────────────────────────────── */}
+          <div className="mb-8">
+            <SectionHeader
+              title="Key Metrics"
+              icon={BarChart3}
+              subtitle="Real-time snapshot of your platform"
+              actions={
+                <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground"
+                  onClick={() => setExpandedStats(!expandedStats)}>
+                  {expandedStats ? <><ChevronUp className="w-3 h-3 mr-1" /> Collapse</> : <><ChevronDown className="w-3 h-3 mr-1" /> Expand</>}
+                </Button>
+              }
+            />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {quickStats.map((stat, idx) => (
+                <BigStatCard key={idx} {...stat} sparkData={getSpark(stat.label)} />
+              ))}
+            </div>
+ 
+            {expandedStats && (
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 animate-in slide-in-from-top-2 duration-200">
+                {[
+                  { label: 'Esports Revenue', value: formatCurrency(dashboardStats.esportsRevenue), icon: Trophy, color: 'blue' },
+                  { label: 'Social Revenue', value: formatCurrency(dashboardStats.socialRevenue), icon: Globe, color: 'green' },
+                  { label: 'Social Posts', value: dashboardStats.socialPosts, icon: FileText, color: 'pink' },
+                  { label: 'Followers Gained', value: `+${dashboardStats.socialFollowersGained}`, icon: TrendingUp, color: 'cyan' },
+                  { label: 'Tech Hours', value: `${dashboardStats.techTotalHours}h`, icon: Cpu, color: 'purple' },
+                  { label: 'Content Pieces', value: dashboardStats.contentCount, icon: Image, color: 'orange' },
+                  { label: 'Leave Requests', value: dashboardStats.leaveRequestsCount, icon: Calendar, color: 'yellow' },
+                  { label: 'Pending Leaves', value: dashboardStats.pendingLeaveRequests, icon: Clock, color: 'red' },
+                  { label: 'Audit Actions', value: dashboardStats.todayAuditActions, icon: Shield, color: 'slate' },
+                  { label: 'Career Apps', value: dashboardStats.totalCareerApplications, icon: BookOpen, color: 'teal' },
+                  { label: 'Avg Followers', value: dashboardStats.averageFollowers.toLocaleString(), icon: Star, color: 'amber' },
+                  { label: 'Active Employees', value: dashboardStats.activeEmployees, icon: UserCheck, color: 'emerald' },
+                ].map((s, i) => (
+                  <StatStrip key={i} {...s} icon={s.icon as React.FC<any>} />
+                ))}
+              </div>
+            )}
+          </div>
+ 
+          {/* ── Attendance + Revenue Row ───────────────────────────────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+ 
+            {/* Attendance Ring */}
+            <Card className="border-white/10 bg-gradient-to-br from-white/8 to-transparent">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-primary" />
+                  Attendance Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-around">
+                  {adminProfile.role === 'super_admin' ? (
+                    <>
+                      <AttendanceRing
+                        percentage={dashboardStats.dailyAdminsPresentPercentage}
+                        present={dashboardStats.presentToday}
+                        total={dashboardStats.totalAdmins}
+                        label="Team Today"
+                      />
+                      <AttendanceRing
+                        percentage={dashboardStats.attendancePercentage}
+                        present={dashboardStats.presentDaysThisMonth}
+                        total={dashboardStats.workingDaysInMonth}
+                        label="My Month"
+                      />
+                    </>
+                  ) : (
+                    <AttendanceRing
+                      percentage={dashboardStats.attendancePercentage}
+                      present={dashboardStats.presentDaysThisMonth}
+                      total={dashboardStats.workingDaysInMonth}
+                      label={`${format(new Date(), 'MMMM')}`}
+                    />
+                  )}
+                </div>
+                <Separator className="my-3 opacity-20" />
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-foreground">{dashboardStats.presentDaysThisMonth}</p>
+                    <p className="text-xs text-muted-foreground">Days Present</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-foreground">{dashboardStats.workingDaysInMonth}</p>
+                    <p className="text-xs text-muted-foreground">Working Days</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+ 
+            {/* Revenue Chart */}
+            <Card className="lg:col-span-2 border-white/10 bg-gradient-to-br from-white/8 to-transparent">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-primary" />
+                    Revenue — Last 7 Days
+                  </CardTitle>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-400" />Esports</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-400" />Social</span>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <RevenueChart stats={dashboardStats} />
+                <div className="grid grid-cols-3 gap-3 mt-3">
+                  {[
+                    { label: 'Esports', value: formatCurrency(dashboardStats.esportsRevenue), color: 'text-blue-400' },
+                    { label: 'Social', value: formatCurrency(dashboardStats.socialRevenue), color: 'text-emerald-400' },
+                    { label: 'Total', value: formatCurrency(dashboardStats.totalRevenue), color: 'text-foreground' },
+                  ].map((r, i) => (
+                    <div key={i} className="text-center rounded-xl bg-white/5 p-2.5 border border-white/8">
+                      <p className={cn("text-base font-bold", r.color)}>{r.value}</p>
+                      <p className="text-xs text-muted-foreground">{r.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+ 
+          {/* ── User Stats Row ─────────────────────────────────────────────── */}
+          <div className="mb-8">
+            <SectionHeader title="User Statistics" icon={Users} subtitle="Platform-wise user breakdown" />
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+              <Card className="lg:col-span-2 border-white/10 bg-gradient-to-br from-white/8 to-transparent">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Distribution</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <UserDistributionChart stats={dashboardStats} />
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    {[
+                      { label: 'Esports', value: dashboardStats.esportsUsers, color: 'bg-blue-400' },
+                      { label: 'Social', value: dashboardStats.socialUsers, color: 'bg-emerald-400' },
+                      { label: 'Employees', value: dashboardStats.totalEmployees, color: 'bg-yellow-400' },
+                      { label: 'Interns', value: dashboardStats.totalInternships, color: 'bg-purple-400' },
+                    ].map((d, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <div className={cn("w-2 h-2 rounded-full", d.color)} />
+                        <span className="text-xs text-muted-foreground">{d.label}</span>
+                        <span className="text-xs font-semibold text-foreground ml-auto">{d.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+              <div className="lg:col-span-3 grid grid-cols-2 sm:grid-cols-2 gap-3">
+                {[
+                  { label: 'Total Users', value: dashboardStats.esportsUsers, icon: Users, color: 'blue', description: 'Platform total' },
+                  { label: 'Esports Users', value: dashboardStats.esportsUsers, icon: Trophy, color: 'purple', description: 'Tournament players' },
+                  { label: 'Avg. Followers', value: dashboardStats.averageFollowers.toLocaleString(), icon: Star, color: 'yellow', description: 'Social avg.' },
+                  { label: 'Active Employees', value: dashboardStats.activeEmployees, icon: UserCheck, color: 'green', description: `of ${dashboardStats.totalEmployees} total` },
+                ].map((s, i) => (
+                  <BigStatCard key={i} {...s as any} sparkData={getSpark(`us-${i}`)} />
+                ))}
+              </div>
+            </div>
+          </div>
+ 
+          {/* ── Daily Tasks & Activity ──────────────────────────────────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <DailyTodos />
+            <ActivitySummary />
+          </div>
+ 
+          {/* ── Super Admin Review Panel ────────────────────────────────────── */}
+          {adminProfile?.role === 'super_admin' && (
+            <div className="mb-8">
+              <SuperAdminReviewPanel />
+            </div>
+          )}
+ 
+          {/* ── Active Data Entry Section ───────────────────────────────────── */}
+          {renderActiveSection()}
+ 
+          {/* ── Data Entry Cards ────────────────────────────────────────────── */}
+          {availableDataEntryCards.length > 0 && (
+            <div className="mb-8">
+              <SectionHeader
+                title="Data Management"
+                icon={Database}
+                subtitle={`${availableDataEntryCards.length} modules available for your role`}
+              />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {availableDataEntryCards.map((card, index) => (
+                  <ModuleCardEnhanced
+                    key={index}
+                    card={card}
+                    onClick={() => navigate(card.route)}
+                    isPinned={pinnedModules.includes(card.title)}
+                    onPin={() => handlePinToggle(card.title)}
+                    viewMode="grid"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+ 
+          {/* ── System Modules ───────────────────────────────────────────────── */}
+          <div className="mb-8">
+            <SectionHeader
+              title="System Modules"
+              icon={LayoutDashboard}
+              subtitle={`${filteredModules.length} of ${availableModules.length} modules`}
+              actions={
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                    <Input
+                      placeholder="Search modules..."
+                      value={moduleSearch}
+                      onChange={e => setModuleSearch(e.target.value)}
+                      className="pl-8 h-8 text-xs bg-black/30 border-white/10 w-48"
+                    />
+                    {moduleSearch && (
+                      <button onClick={() => setModuleSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                        <X className="w-3 h-3 text-muted-foreground" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 border border-white/10 rounded-lg p-0.5 bg-black/20">
+                    {(['grid', 'list'] as const).map(mode => (
+                      <button key={mode} onClick={() => setModuleViewMode(mode)}
+                        className={cn("h-7 w-7 flex items-center justify-center rounded-md transition-colors",
+                          moduleViewMode === mode ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground")}>
+                        {mode === 'grid' ? <Grid3X3 className="w-3.5 h-3.5" /> : <List className="w-3.5 h-3.5" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              }
+            />
+ 
+            {/* Pinned Modules */}
+            <PinnedModulesRow
+              pinned={pinnedModules}
+              modules={availableModules}
+              navigate={navigate}
+              onUnpin={handlePinToggle}
+            />
+ 
+            {/* Category Tabs */}
+            <div className="flex gap-2 flex-wrap mb-5">
+              {MODULE_CATEGORIES.map(cat => {
+                const CatIcon = CATEGORY_ICONS[cat];
+                const count = cat === 'All' ? availableModules.length : availableModules.filter(m => m.category === cat).length;
+                if (count === 0 && cat !== 'All') return null;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all",
+                      activeCategory === cat
+                        ? "bg-primary/20 border-primary/35 text-primary"
+                        : "bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10 hover:text-foreground"
+                    )}
+                  >
+                    <CatIcon className="w-3.5 h-3.5" />
+                    {cat}
+                    <span className={cn("text-xs rounded-full px-1.5 py-0",
+                      activeCategory === cat ? "bg-primary/20" : "bg-white/10"
+                    )}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+ 
+            {/* Module Grid / List */}
+            {filteredModules.length === 0 ? (
+              <div className="text-center py-16 text-muted-foreground border border-white/10 rounded-2xl">
+                <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                <p className="text-sm font-medium">No modules found</p>
+                <p className="text-xs mt-1 opacity-60">Try adjusting your search or category filter</p>
+                <Button variant="ghost" size="sm" className="mt-3" onClick={() => { setModuleSearch(''); setActiveCategory('All'); }}>
+                  Clear filters
+                </Button>
+              </div>
+            ) : moduleViewMode === 'grid' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {filteredModules.map((module, index) => (
+                  <ModuleCardEnhanced
+                    key={index}
+                    card={module}
+                    onClick={() => navigate(module.route)}
+                    isPinned={pinnedModules.includes(module.title)}
+                    onPin={() => handlePinToggle(module.title)}
+                    viewMode="grid"
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {filteredModules.map((module, index) => (
+                  <ModuleCardEnhanced
+                    key={index}
+                    card={module}
+                    onClick={() => navigate(module.route)}
+                    isPinned={pinnedModules.includes(module.title)}
+                    onPin={() => handlePinToggle(module.title)}
+                    viewMode="list"
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+ 
+          {/* ── Footer Info ──────────────────────────────────────────────────── */}
+          <div className="border-t border-white/8 pt-6 mt-4 flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center gap-4">
+              <span>THRYLOS Admin Panel</span>
+              <Separator orientation="vertical" className="h-3" />
+              <span>{availableModules.length} modules available</span>
+              <Separator orientation="vertical" className="h-3" />
+              <span className="capitalize">{displayProfile.role.replace(/_/g, ' ')}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <PulseRing color="bg-green-400" />
+              <span>Auto-refresh every 5s</span>
+            </div>
+          </div>
+        </div>
+ 
+        {/* ── Floating Notifications ─────────────────────────────────────────── */}
+        <NotificationToast notifications={notifications} />
+      </>
+    </TooltipProvider>
+  );
+};
+ 
+export default Dashboard;
+ 
             
