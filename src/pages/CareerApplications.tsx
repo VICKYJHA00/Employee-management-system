@@ -98,3 +98,16 @@ const updateApplicationStatus = async (id: string, status: string) => {
     });
   }
 };
+const [statusFilter, setStatusFilter] = useState<string>('all');
+
+const filteredApplications =
+  statusFilter === 'all'
+    ? applications
+    : applications.filter(app => app.status === statusFilter);
+
+const stats = {
+  total: applications.length,
+  pending: applications.filter(a => a.status === 'pending').length,
+  shortlisted: applications.filter(a => a.status === 'shortlisted').length,
+  hired: applications.filter(a => a.status === 'hired').length,
+};
