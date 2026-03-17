@@ -228,5 +228,20 @@ const AdminManagement: React.FC = () => {
     }
   };
 
+  const handleSetStatus = async (admin: AdminProfile, status: string) => {
+    try {
+      const { error } = await supabase
+        .from('admins')
+        .update({ status })
+        .eq('id', admin.id);
+
+      if (error) throw error;
+
+      const statusMessages: { [key: string]: string } = {
+        'active': 'Admin is now active and can login',
+        'on_leave': 'Admin marked as on leave - they cannot login',
+        'suspended': 'Admin has been suspended - they cannot login'
+      };
+
 
 export default EmployeeManagement;
