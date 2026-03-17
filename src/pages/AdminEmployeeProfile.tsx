@@ -86,3 +86,21 @@ const fetchMyData = async () => {
 const fetchAllAdminsData = async () => {
   // FULL FUNCTION FROM YOUR CODE
 };
+const [files, setFiles] = useState({
+  profile_image: null,
+  aadhar_document: null,
+  pan_document: null,
+  offer_letter: null,
+});
+
+const uploadFile = async (file: File, folder: string) => {
+  // FULL FUNCTION
+};
+
+const handleSubmit = async (isLocking = false) => {
+  // FULL FUNCTION
+};
+
+const handleSuperAdminUpdate = async () => {
+  // FULL FUNCTION
+};
