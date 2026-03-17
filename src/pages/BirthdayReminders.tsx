@@ -89,6 +89,44 @@ const BirthdayReminders: React.FC = () => {
               </div>
             )}
 
+            {upcoming.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-blue-400 mb-3 flex items-center gap-2"><Gift className="w-4 h-4" /> Upcoming (Next 30 Days)</h3>
+                <div className="space-y-2">
+                  {upcoming.map(p => (
+                    <Card key={p.id} className="border-white/10 bg-white/5">
+                      <CardContent className="p-3 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-sm">{p.full_name?.charAt(0)}</div>
+                          <div>
+                            <h4 className="text-sm font-medium text-white">{p.full_name}</h4>
+                            <p className="text-xs text-gray-500">{p.department} • {p.type}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-white">{p.birthdayDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                          <Badge className="bg-blue-500/20 text-blue-400 text-[10px]">In {p.daysUntil} days</Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {others.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500 mb-3">All Birthdays</h3>
+                <div className="space-y-1">
+                  {others.map(p => (
+                    <div key={p.id} className="flex items-center justify-between p-2 hover:bg-white/5 rounded text-sm">
+                      <span className="text-gray-300">{p.full_name}</span>
+                      <span className="text-xs text-gray-500">{p.birthdayDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} ({p.daysUntil}d)</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {filtered.length === 0 && <p className="text-gray-400">No birthday data available. Ensure date of birth is filled in employee/admin profiles.</p>}
           </div>
