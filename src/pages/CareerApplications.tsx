@@ -35,3 +35,39 @@ const CareerApplications: React.FC = () => {
 };
 
 export default CareerApplications;
+const [applications, setApplications] = useState<CareerApplication[]>([]);
+const [isLoading, setIsLoading] = useState(true);
+
+const fetchApplications = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('career_applications')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const typedData = (data || []).map(app => ({
+      ...app,
+      additional_documents: Array.isArray(app.additional_documents)
+        ? app.additional_documents as string[]
+        : []
+    }));
+
+    setApplications(typedData);
+  } catch (error: any) {
+    toast({
+      title: "Error",
+      description: "Failed to fetch career applications",
+      variant: "destructive"
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+useEffect(() => {
+  fetchApplications();
+  const interval = setInterval(fetchApplications, 5000);
+  return () => clearInterval(interval);
+}, []);
