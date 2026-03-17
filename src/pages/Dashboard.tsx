@@ -1,22 +1,3 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Header from '@/components/Header';
-import DashboardCard from '@/components/DashboardCard';
-import DailyTodos from '@/components/DailyTodos';
-import ActivitySummary from '@/components/ActivitySummary';
-import MobileDashboard from '@/components/MobileDashboard';
-import { useAuth } from '@/contexts/AuthContext';
-import { rolePermissions } from '@/types/auth';
-import { supabase } from '@/integrations/supabase/client';
-import EsportsPlayerForm from '@/components/EsportsPlayerForm';
-import SocialMediaOrderForm from '@/components/SocialMediaOrderForm';
-import SuperAdminReviewPanel from '@/components/SuperAdminReviewPanel';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, X, Loader2, RefreshCw } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
