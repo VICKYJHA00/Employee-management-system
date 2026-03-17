@@ -114,6 +114,7 @@ const AuditLogs: React.FC = () => {
       console.error('Error fetching admins:', error);
     }
   };
+
   const fetchAuditLogs = async () => {
     try {
       const logs: AuditLog[] = [];
@@ -254,6 +255,7 @@ const AuditLogs: React.FC = () => {
       });
     }
   };
+
   const getActionIcon = (action: string) => {
     switch (action) {
       case 'LOGIN':
@@ -432,7 +434,8 @@ const AuditLogs: React.FC = () => {
             )}
           </CardContent>
         </Card>
-       {/* Notify Dialog */}
+
+        {/* Notify Dialog */}
         <Dialog open={showNotifyDialog} onOpenChange={setShowNotifyDialog}>
           <DialogContent className="bg-card border-white/10">
             <DialogHeader>
