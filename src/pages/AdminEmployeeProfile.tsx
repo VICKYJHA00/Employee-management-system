@@ -121,3 +121,12 @@ const renderFormFields = () => {
 const renderDocumentUploads = () => {
   // FULL CODE
 };
+if (isLoading) {
+  return <div>Loading...</div>;
+}
+
+return (
+  // FULL RETURN JSX (exactly your code)
+);
+
+export default AdminEmployeeProfile;
