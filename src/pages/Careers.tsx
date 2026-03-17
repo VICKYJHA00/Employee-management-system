@@ -112,3 +112,40 @@ const Careers: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+  const roles = ['Developer','Designer','Marketing','Community Manager','Operations','Content Creator','Other'];
+
+  const stackCards = [
+    { icon: <Rocket />, title: "Innovation First", description: "Pushing esports tech." },
+    { icon: <Users />, title: "Team Spirit", description: "Competitive mindset." },
+    { icon: <Briefcase />, title: "Growth", description: "Real mentorship." },
+    { icon: <Shield />, title: "Secure Future", description: "Fast-growing org." },
+    { icon: <Heart />, title: "Balance", description: "Healthy work culture." },
+    { icon: <FileText />, title: "Learning", description: "Skill-first culture." }
+  ];
+
+  return (
+    <div className="min-h-screen bg-black">
+
+      {/* HERO */}
+      <section className="min-h-screen flex flex-col items-center justify-center text-center">
+        <h1 className="text-6xl font-bold">THRYLOS</h1>
+        <p className="text-muted-foreground">Build esports future</p>
+
+        <Button onClick={scrollToForm}>
+          Apply Now <ChevronDown />
+        </Button>
+      </section>
+
+      {/* CARDS */}
+      <section className="py-20">
+        <div className="grid md:grid-cols-3 gap-6">
+          {stackCards.map((card, i) => (
+            <div key={i} className="p-6 border rounded-lg">
+              {card.icon}
+              <h4>{card.title}</h4>
+              <p>{card.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+  
