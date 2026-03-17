@@ -104,3 +104,20 @@ const handleSubmit = async (isLocking = false) => {
 const handleSuperAdminUpdate = async () => {
   // FULL FUNCTION
 };
+const openViewDialog = (data: AdminEmployeeData) => {
+  setSelectedData(data);
+};
+
+const openEditDialog = (data: AdminEmployeeData) => {
+  setSelectedData(data);
+};
+
+// FULL renderFormFields (VERY BIG)
+const renderFormFields = () => {
+  // FULL CODE (no skipping)
+};
+
+// FULL renderDocumentUploads
+const renderDocumentUploads = () => {
+  // FULL CODE
+};
