@@ -71,3 +71,30 @@ useEffect(() => {
   const interval = setInterval(fetchApplications, 5000);
   return () => clearInterval(interval);
 }, []);
+const updateApplicationStatus = async (id: string, status: string) => {
+  try {
+    const { error } = await supabase
+      .from('career_applications')
+      .update({
+        status,
+        reviewed_by: adminProfile?.id,
+        reviewed_at: new Date().toISOString()
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    toast({
+      title: "Status Updated",
+      description: `Application status changed to ${status}`,
+    });
+
+    fetchApplications();
+  } catch {
+    toast({
+      title: "Error",
+      description: "Failed to update application status",
+      variant: "destructive"
+    });
+  }
+};
