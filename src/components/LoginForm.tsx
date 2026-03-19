@@ -1,28 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/components/ui/use-toast';
-import { Loader2, MapPin, AlertTriangle, Mail, Shield, ArrowLeft } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 
-type LoginStep = 'location' | 'email' | 'otp';
-
-const LoginForm: React.FC = () => {
-  const { loginWithOTP } = useAuth();
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
-  const [otpSentTo, setOtpSentTo] = useState('');
-  const [step, setStep] = useState<LoginStep>('location');
-  const [locationGranted, setLocationGranted] = useState<boolean | null>(null);
-  const [locationLoading, setLocationLoading] = useState(true);
-  const [locationError, setLocationError] = useState<string | null>(null);
-  const [resendCooldown, setResendCooldown] = useState(0);
 
   // Check location permission on mount
   useEffect(() => {
