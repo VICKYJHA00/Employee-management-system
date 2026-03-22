@@ -318,6 +318,21 @@ const AdminManagement: React.FC = () => {
     return colors[role] || 'bg-muted text-muted-foreground border-border';
   };
 
+  const isSuperAdmin = adminProfile?.role === "super_admin";
+
+if (!isSuperAdmin) {
+  return (
+    <ModuleLayout title="Access Denied">
+      <div className="py-12 text-center">
+        <h3 className="mb-2 text-lg font-semibold">Access Restricted</h3>
+        <p className="text-muted-foreground">
+          Only Super Admins can access this module.
+        </p>
+      </div>
+    </ModuleLayout>
+  );
+}
+  
 
 
 export default EmployeeManagement;
