@@ -53,3 +53,34 @@ const CertificateManager: React.FC = () => {
 };
 
 export default CertificateManager;
+useEffect(() => {
+  fetchCertificates();
+
+  const channel = supabase
+    .channel('certificate-changes')
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'certificates' },
+      () => fetchCertificates()
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, []);
+
+const fetchCertificates = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('certificates')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    setCertificates((data || []) as Certificate[]);
+  } catch (error) {
+    console.error('Error fetching certificates:', error);
+  } finally {
+    setIsLoading(false);
+  }
+};
