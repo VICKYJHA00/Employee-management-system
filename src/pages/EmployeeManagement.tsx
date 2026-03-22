@@ -305,6 +305,19 @@ const AdminManagement: React.FC = () => {
     setDialogOpen(true);
   };
 
+   const getRoleBadgeColor = (role: AdminProfile['role']) => {
+    const colors: Record<string, string> = {
+      super_admin: 'bg-red-500/10 text-red-400 border-red-500/20',
+      betting_admin: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+      trading_admin: 'bg-green-500/10 text-green-400 border-green-500/20',
+      social_admin: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+      esports_admin: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+      tech_admin: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+      content_admin: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
+    };
+    return colors[role] || 'bg-muted text-muted-foreground border-border';
+  };
+
 
 
 export default EmployeeManagement;
