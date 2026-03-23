@@ -84,3 +84,13 @@ const fetchCertificates = async () => {
     setIsLoading(false);
   }
 };
+const filteredCertificates = certificates.filter(cert =>
+  (cert.participant_name || cert.recipient_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+  (cert.certificate_id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+  (cert.course_name || cert.certificate_type || '').toLowerCase().includes(searchTerm.toLowerCase())
+);
+
+const generateCertificateId = () => {
+  const random6Digits = Math.floor(100000 + Math.random() * 900000);
+  return `MU${random6Digits}`;
+};
