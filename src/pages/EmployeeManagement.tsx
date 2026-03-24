@@ -56,7 +56,7 @@ const AdminManagement: React.FC = () => {
     };
   }, []);
 
-   const fetchAdmins = async () => {
+  const fetchAdmins = async () => {
     try {
       const { data, error } = await supabase
         .from('admins')
@@ -116,7 +116,7 @@ const AdminManagement: React.FC = () => {
     }
   };
 
-   const handleUpdateAdmin = async () => {
+  const handleUpdateAdmin = async () => {
     if (!selectedAdmin) return;
 
     try {
@@ -176,8 +176,7 @@ const AdminManagement: React.FC = () => {
       toast({ title: "Error", description: "Password must be at least 6 characters", variant: "destructive" });
       return;
     }
- 
-        if (!selectedAdmin.user_id) {
+    if (!selectedAdmin.user_id) {
       toast({ title: "Error", description: "This admin has no linked auth user", variant: "destructive" });
       return;
     }
@@ -205,7 +204,7 @@ const AdminManagement: React.FC = () => {
     setPasswordDialogOpen(true);
   };
 
-   const handleToggleActive = async (admin: AdminProfile) => {
+  const handleToggleActive = async (admin: AdminProfile) => {
     try {
       const { error } = await supabase
         .from('admins')
@@ -227,6 +226,14 @@ const AdminManagement: React.FC = () => {
       });
     }
   };
+
+
+
+
+
+
+
+
 
   const handleSetStatus = async (admin: AdminProfile, status: string) => {
     try {
@@ -259,7 +266,7 @@ const AdminManagement: React.FC = () => {
     }
   };
 
-    const getStatusBadge = (status: string = 'active') => {
+  const getStatusBadge = (status: string = 'active') => {
     switch (status) {
       case 'on_leave':
         return <Badge className="bg-yellow-500/10 text-yellow-400 border-yellow-500/20"><Coffee className="w-3 h-3 mr-1" />On Leave</Badge>;
@@ -270,8 +277,7 @@ const AdminManagement: React.FC = () => {
     }
   };
 
-
-   const resetForm = () => {
+  const resetForm = () => {
     setFormData({
       name: '',
       email: '',
@@ -283,7 +289,6 @@ const AdminManagement: React.FC = () => {
     });
   };
 
-
   const openCreateDialog = () => {
     resetForm();
     setSelectedAdmin(null);
@@ -291,7 +296,7 @@ const AdminManagement: React.FC = () => {
   };
 
 
-   const openEditDialog = (admin: AdminProfile) => {
+  const openEditDialog = (admin: AdminProfile) => {
     setFormData({
       name: admin.name,
       email: admin.email,
@@ -305,7 +310,7 @@ const AdminManagement: React.FC = () => {
     setDialogOpen(true);
   };
 
-   const getRoleBadgeColor = (role: AdminProfile['role']) => {
+  const getRoleBadgeColor = (role: AdminProfile['role']) => {
     const colors: Record<string, string> = {
       super_admin: 'bg-red-500/10 text-red-400 border-red-500/20',
       betting_admin: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
@@ -318,23 +323,357 @@ const AdminManagement: React.FC = () => {
     return colors[role] || 'bg-muted text-muted-foreground border-border';
   };
 
-  const isSuperAdmin = adminProfile?.role === "super_admin";
+  if (adminProfile?.role !== 'super_admin') {
+    return (
+      <ModuleLayout title="Access Denied">
+        <div className="text-center py-12">
+          <h3 className="text-lg font-semibold mb-2">Access Restricted</h3>
+          <p className="text-muted-foreground">Only Super Admins can access this module.</p>
+        </div>
+      </ModuleLayout>
+    );
+  }
 
-if (!isSuperAdmin) {
   return (
-    <ModuleLayout title="Access Denied">
-      <div className="py-12 text-center">
-        <h3 className="mb-2 text-lg font-semibold">Access Restricted</h3>
-        <p className="text-muted-foreground">
-          Only Super Admins can access this module.
-        </p>
+    <ModuleLayout
+      title="Admin Management"
+      description="Manage admin accounts, roles, and permissions"
+      actions={
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={openCreateDialog} className="gradient-primary">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Admin
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-card border-white/10 max-w-md">
+            <DialogHeader>
+              <DialogTitle>
+                {selectedAdmin ? 'Edit Admin' : 'Create New Admin'}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="bg-black/50 border-white/10"
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Login Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="bg-black/50 border-white/10"
+                  placeholder="Email used to login"
+                />
+              </div>
+              <div>
+                <Label htmlFor="otp_email">OTP Email (Optional)</Label>
+                <Input
+                  id="otp_email"
+                  type="email"
+                  value={formData.otp_email}
+                  onChange={(e) => setFormData({ ...formData, otp_email: e.target.value })}
+                  className="bg-black/50 border-white/10"
+                  placeholder="Email where OTP will be sent"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  If empty, OTP will be sent to login email
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="avatar">Avatar Image</Label>
+                <Input
+                  id="avatar"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setFormData({ ...formData, avatarFile: file, avatar: URL.createObjectURL(file) });
+                    }
+                  }}
+                  className="bg-black/50 border-white/10"
+                />
+                {formData.avatar && (
+                  <div className="mt-2 flex items-center space-x-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={formData.avatar} alt="Preview" />
+                      <AvatarFallback className="bg-gray-700 text-white text-xs">
+                        {formData.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm text-gray-400">Preview</span>
+                  </div>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="role">Role</Label>
+                <Select value={formData.role} onValueChange={(value: any) => 
+                  setFormData({ ...formData, role: value })
+                }>
+                  <SelectTrigger className="bg-black/50 border-white/10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="super_admin">Super Admin</SelectItem>
+                    <SelectItem value="social_admin">Social Media Admin</SelectItem>
+                    <SelectItem value="esports_admin">eSports Admin</SelectItem>
+                    <SelectItem value="tech_admin">Tech Admin</SelectItem>
+                    <SelectItem value="content_admin">Content Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {!selectedAdmin && (
+                <div>
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    className="bg-black/50 border-white/10"
+                  />
+                </div>
+              )}
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={selectedAdmin ? handleUpdateAdmin : handleCreateAdmin}
+                  className="gradient-primary"
+                >
+                  {selectedAdmin ? 'Update' : 'Create'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      }
+    >
+      <div className="space-y-6">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <Card className="gradient-card border-white/10">
+            <CardContent className="p-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-gradient">{admins.length}</p>
+                <p className="text-sm text-muted-foreground">Total Admins</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="gradient-card border-white/10">
+            <CardContent className="p-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-green-400">
+                  {admins.filter(a => a.is_active && (a.status === 'active' || !a.status)).length}
+                </p>
+                <p className="text-sm text-muted-foreground">Active</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="gradient-card border-white/10">
+            <CardContent className="p-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-yellow-400">
+                  {admins.filter(a => a.status === 'on_leave').length}
+                </p>
+                <p className="text-sm text-muted-foreground">On Leave</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="gradient-card border-white/10">
+            <CardContent className="p-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-red-400">
+                  {admins.filter(a => a.status === 'suspended' || !a.is_active).length}
+                </p>
+                <p className="text-sm text-muted-foreground">Suspended</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="gradient-card border-white/10">
+            <CardContent className="p-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-purple-400">
+                  {admins.filter(a => a.role === 'super_admin').length}
+                </p>
+                <p className="text-sm text-muted-foreground">Super Admins</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Admins Table */}
+        <Card className="gradient-card border-white/10">
+          <CardHeader>
+            <CardTitle>All Admins</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="shimmer h-12 rounded" />
+                ))}
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Admin</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Account</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Last Login</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {admins.map((admin) => (
+                    <TableRow key={admin.id}>
+                      <TableCell>
+                        <div className="flex items-center space-x-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={admin.avatar || undefined} />
+                            <AvatarFallback className="bg-gradient-to-br from-purple-600 to-blue-600 text-white text-xs">
+                              {admin.name.split(' ').map(n => n[0]).join('')}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium">{admin.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{admin.email}</TableCell>
+                      <TableCell>
+                        <Badge className={getRoleBadgeColor(admin.role)}>
+                          {roleNames[admin.role]}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            checked={admin.is_active}
+                            onCheckedChange={() => handleToggleActive(admin)}
+                          />
+                          <span className={admin.is_active ? 'text-green-400 text-xs' : 'text-red-400 text-xs'}>
+                            {admin.is_active ? 'Enabled' : 'Disabled'}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {getStatusBadge(admin.status)}
+                      </TableCell>
+                      <TableCell>
+                        {admin.last_login 
+                          ? new Date(admin.last_login).toLocaleDateString()
+                          : 'Never'
+                        }
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditDialog(admin)}
+                            title="Edit"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openPasswordDialog(admin)}
+                            title="Reset Password"
+                          >
+                            <Key className="w-4 h-4" />
+                          </Button>
+                          <Select
+                            value={admin.status || 'active'}
+                            onValueChange={(value) => handleSetStatus(admin, value)}
+                          >
+                            <SelectTrigger className="w-[110px] h-8 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="active">
+                                <span className="flex items-center gap-1">
+                                  <CheckCircle className="w-3 h-3 text-green-500" />
+                                  Active
+                                </span>
+                              </SelectItem>
+                              <SelectItem value="on_leave">
+                                <span className="flex items-center gap-1">
+                                  <Coffee className="w-3 h-3 text-yellow-500" />
+                                  On Leave
+                                </span>
+                              </SelectItem>
+                              <SelectItem value="suspended">
+                                <span className="flex items-center gap-1">
+                                  <Ban className="w-3 h-3 text-red-500" />
+                                  Suspended
+                                </span>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Password Reset Dialog */}
+      <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
+        <DialogContent className="bg-card border-white/10 max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reset Password for {selectedAdmin?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              To reset the password for this admin, they can use the "Forgot Password" option on the login page. 
+              This will send a password reset email to: <strong>{selectedAdmin?.email}</strong>
+            </p>
+            <div>
+              <Label htmlFor="newPassword">New Password (for reference only)</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password"
+                className="bg-black/50 border-white/10"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Note: Direct password updates require admin access to the backend dashboard.
+              </p>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setPasswordDialogOpen(false)}>
+                Close
+              </Button>
+              <Button
+                onClick={handleUpdatePassword}
+                className="gradient-primary"
+              >
+                Update Password
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </ModuleLayout>
   );
-}
-  
+};
 
-
-export default EmployeeManagement;
-
-
+export default AdminManagement;
