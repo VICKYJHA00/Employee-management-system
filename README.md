@@ -1,11 +1,6 @@
 <p align="center">
   <img src="https://github.com/user-attachments/assets/4e805623-2f52-4b59-9a46-f51c651fe65e" alt="Thrylos" width="400" />
 </p>
-
-<p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=24&pause=1000&color=EF4444&center=true&vCenter=true&width=500&lines=Competitive+Esports+Platform;Skill-Based+Gaming;Tournament+Management" alt="Typing Animation" />
-</p>
-
 <p align="center">
   <strong>Competitive Esports & Skill-Based Gaming Platform</strong>
 </p>
