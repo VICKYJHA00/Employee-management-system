@@ -2,7 +2,7 @@
   <img src="https://github.com/user-attachments/assets/4e805623-2f52-4b59-9a46-f51c651fe65e" alt="Thrylos" width="400" />
 </p>
 <p align="center">
-  <strong>]Competitive Esports & Skill-Based Gaming Platform</strong>
+  <strong>Competitive Esports & Skill-Based Gaming Platform</strong>
 </p>
 
 **Thrylos** is a full-stack esports platform for hosting competitive tournaments, managing player registrations, handling UPI payments, and providing a seamless experience for players, organizers, and admins — built with fair play, scalability, and Indian compliance in mind.
