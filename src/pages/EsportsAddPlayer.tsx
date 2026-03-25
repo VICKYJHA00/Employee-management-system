@@ -37,3 +37,40 @@ const [formData, setFormData] = useState({
 
 const [isLoading, setIsLoading] = useState(false);
 const [isFetching, setIsFetching] = useState(false);
+useEffect(() => {
+  if (editId) {
+    fetchPlayerData();
+  }
+}, [editId]);
+
+const fetchPlayerData = async () => {
+  setIsFetching(true);
+  try {
+    const { data, error } = await supabase
+      .from('esports_players')
+      .select('*')
+      .eq('id', editId)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (data) {
+      setFormData({
+        player_name: data.player_name || '',
+        game_uid: data.game_uid || '',
+        email: data.email || '',
+        tournament_name: data.tournament_name || '',
+        entry_fees: data.entry_fees?.toString() || '',
+        payment_received: data.payment_received || false
+      });
+    }
+  } catch (error: any) {
+    toast({
+      title: "Error",
+      description: "Failed to fetch player data",
+      variant: "destructive",
+    });
+  } finally {
+    setIsFetching(false);
+  }
+};
