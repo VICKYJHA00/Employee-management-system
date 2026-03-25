@@ -24,6 +24,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { roleNames } from '@/types/auth';
 import { castToAdminProfiles } from '@/utils/adminTypeCasting';
 
+
 // ─── Styles injected once ────────────────────────────────────────────────────
 const CHAT_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
@@ -126,7 +127,19 @@ interface AdminProfile {
   updated_at: string;
 }
 
+
+
+
+
+
 // ─── Constants ────────────────────────────────────────────────────────────────
+
+
+
+
+
+
+
 
 const ROLE_GRADIENTS: Record<string, { bg: string; text: string; dot: string }> = {
   super_admin:   { bg: 'from-rose-500   to-orange-500',  text: 'text-rose-300',   dot: '#f43f5e' },
@@ -145,9 +158,23 @@ function getInitials(name: string) {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
+
+
+
+
+
+
+
+
 function formatTime(date: string) {
   return new Date(date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 }
+
+
+
+
+
+
 
 function formatDate(date: string): string {
   const d    = new Date(date);
@@ -157,6 +184,12 @@ function formatDate(date: string): string {
   if (d.toDateString() === yest.toDateString()) return 'Yesterday';
   return d.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
 }
+
+
+
+
+
+
 
 function getOnlineStatus(lastLogin: string | null, isMe: boolean): 'online' | 'away' | 'offline' {
   if (isMe) return 'online';
@@ -228,8 +261,26 @@ const MessageBubble: React.FC<{
   const isImage    = msg.message.startsWith('📷 Shared an image:');
   const imgUrl     = isImage ? msg.message.replace('📷 Shared an image: ', '') : null;
 
+
+
+
+
+
+
+
+
+
+  
   return (
     <div className={`msg-animate flex items-end gap-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}>
+
+
+
+
+
+
+
+      
       {/* Avatar */}
       <div className="shrink-0 w-8">
         {showAvatar ? (
@@ -256,6 +307,15 @@ const MessageBubble: React.FC<{
           </div>
         )}
 
+
+
+
+
+
+
+
+
+        
         {/* Bubble */}
         <div className={`
           relative px-3.5 py-2.5 rounded-2xl shadow-md
@@ -324,6 +384,15 @@ const MembersPanel: React.FC<{ admins: AdminProfile[]; currentId: string; online
   </div>
 );
 
+
+
+
+
+
+
+
+
+
 // ─── Main TeamChat ────────────────────────────────────────────────────────────
 
 const TeamChat: React.FC = () => {
@@ -379,6 +448,15 @@ const TeamChat: React.FC = () => {
       supabase.from('admins').update({ last_login: new Date().toISOString() }).eq('id', adminProfile.id);
     }
 
+
+
+
+
+
+
+
+
+    
     // Realtime
     const channel = supabase
       .channel('chat-messages')
@@ -422,6 +500,15 @@ const TeamChat: React.FC = () => {
     setMessage(e.target.value);
   };
 
+
+
+
+
+
+
+
+
+  
   // ── Image upload ───────────────────────────────────────────────────────────
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -485,6 +572,15 @@ const TeamChat: React.FC = () => {
     return groups;
   }, [messages]);
 
+
+
+
+
+
+
+
+
+  
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
@@ -591,6 +687,15 @@ const TeamChat: React.FC = () => {
                 )}
               </div>
 
+
+
+
+
+
+
+
+              
+
               {/* Input bar */}
               <div className="shrink-0 px-3 py-3 border-t border-white/[0.06] bg-[#0d0d14]">
                 <div className="input-glow flex items-center gap-2 bg-white/5 border border-white/10 rounded-2xl px-2 py-1.5 transition-all">
@@ -655,6 +760,15 @@ const TeamChat: React.FC = () => {
         </ModuleLayout>
       </div>
 
+
+
+
+
+
+
+
+
+      
       {/* ── Image lightbox ── */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
         <DialogContent className="max-w-3xl max-h-[90vh] p-0 bg-black/98 border-white/10 overflow-hidden rounded-2xl">
@@ -673,5 +787,10 @@ const TeamChat: React.FC = () => {
     </>
   );
 };
+
+
+
+
+
 
 export default TeamChat;
