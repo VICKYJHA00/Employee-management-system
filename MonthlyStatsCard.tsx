@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/popover';
 
 import { Progress } from '@/components/ui/progress';
-import { CalendarIcon, TrendingUp, Activity } from 'lucide-react';
+import { CalendarIcon, TrendingUp, Activity, BarChart3 } from 'lucide-react';
 import { format } from 'date-fns';
 
 import {
@@ -50,21 +50,27 @@ interface Props {
 }
 
 /* ===================================================== */
-/* SMALL HELPERS (NEW)                                   */
+/* UTILITY FUNCTIONS                                     */
 /* ===================================================== */
 
-/**
- * Calculate attendance ratio safely
- */
 const calculateRatio = (value: number, total: number) => {
   if (total === 0) return 0;
   return Math.round((value / total) * 100);
 };
 
-/**
- * Format percentage display
- */
-const formatPercentage = (value: number) => `${value}%`;
+const getPerformanceLevel = (percentage: number) => {
+  if (percentage >= 85) return "Excellent";
+  if (percentage >= 70) return "Good";
+  if (percentage >= 50) return "Average";
+  return "Poor";
+};
+
+const getPerformanceColor = (percentage: number) => {
+  if (percentage >= 85) return "text-green-400";
+  if (percentage >= 70) return "text-blue-400";
+  if (percentage >= 50) return "text-yellow-400";
+  return "text-red-400";
+};
 
 /* ===================================================== */
 /* HELPER COMPONENTS                                     */
@@ -85,11 +91,8 @@ const StatBox = ({
     <div className={`text-center p-4 rounded-xl border ${colorClass}`}>
       <p className="text-2xl font-bold">{value}</p>
 
-      {/* NEW: show percentage if available */}
       {percentage !== undefined && (
-        <p className="text-[10px] text-gray-400">
-          {percentage}%
-        </p>
+        <p className="text-[10px] text-gray-400">{percentage}%</p>
       )}
 
       <p className="text-xs text-gray-400">{label}</p>
@@ -107,6 +110,20 @@ const InsightBox = ({
   <div className="p-3 rounded-lg bg-gray-800/50 border border-gray-700">
     <p className="text-xs text-gray-400">{title}</p>
     <p className="text-sm font-semibold text-white">{value}</p>
+  </div>
+);
+
+/* NEW COMPONENT */
+const SummaryRow = ({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) => (
+  <div className="flex justify-between text-sm text-gray-400">
+    <span>{label}</span>
+    <span className="text-white font-medium">{value}</span>
   </div>
 );
 
@@ -138,12 +155,15 @@ const MonthlyStatsCard: React.FC<Props> = ({
   ], [myStats]);
 
   /* ============================= */
-  /* DERIVED VALUES (NEW)          */
+  /* DERIVED DATA                  */
   /* ============================= */
 
   const presentRatio = calculateRatio(myStats.present, myStats.totalDays);
   const lateRatio = calculateRatio(myStats.late, myStats.totalDays);
   const absentRatio = calculateRatio(myStats.absent, myStats.totalDays);
+
+  const performanceLevel = getPerformanceLevel(safePercentage);
+  const performanceColor = getPerformanceColor(safePercentage);
 
   /* ============================= */
   /* INSIGHTS                      */
@@ -159,22 +179,11 @@ const MonthlyStatsCard: React.FC<Props> = ({
     return "Needs improvement";
   }, [myStats]);
 
-  const performanceLevel = useMemo(() => {
-    if (safePercentage >= 85) return "Excellent";
-    if (safePercentage >= 70) return "Good";
-    if (safePercentage >= 50) return "Average";
-    return "Poor";
-  }, [safePercentage]);
-
-  /* ============================= */
-  /* EXTRA SMALL FEATURE (NEW)     */
-  /* ============================= */
-
   const attendanceMessage = useMemo(() => {
-    if (safePercentage >= 85) return "You're doing amazing this month 🚀";
-    if (safePercentage >= 70) return "Good job, keep improving 👍";
-    if (safePercentage >= 50) return "Try to improve consistency ⚡";
-    return "Needs serious improvement ⚠️";
+    if (safePercentage >= 85) return "Outstanding performance 🚀";
+    if (safePercentage >= 70) return "Keep pushing forward 👍";
+    if (safePercentage >= 50) return "Consistency needed ⚡";
+    return "Focus required ⚠️";
   }, [safePercentage]);
 
   /* ============================= */
@@ -194,13 +203,12 @@ const MonthlyStatsCard: React.FC<Props> = ({
     <div className="space-y-6">
 
       {/* ========================= */}
-      {/* MAIN CARD                */}
+      {/* MAIN ANALYTICS CARD      */}
       {/* ========================= */}
       <Card className="bg-gray-900/60 border-gray-800 backdrop-blur-lg">
         <CardHeader>
           <div className="flex items-center justify-between">
 
-            {/* Title */}
             <div>
               <CardTitle className="flex items-center gap-2 text-white">
                 <TrendingUp className="h-5 w-5 text-blue-500" />
@@ -212,7 +220,6 @@ const MonthlyStatsCard: React.FC<Props> = ({
               </CardDescription>
             </div>
 
-            {/* Month Picker */}
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm">
@@ -251,7 +258,7 @@ const MonthlyStatsCard: React.FC<Props> = ({
           </div>
 
           {/* Progress */}
-          <div className="space-y-3">
+          <div className="space-y-3 mb-6">
             <div className="flex justify-between text-sm text-gray-300">
               <span>Performance Score</span>
               <span>{myStats.score.toFixed(1)} / {myStats.totalDays}</span>
@@ -259,10 +266,20 @@ const MonthlyStatsCard: React.FC<Props> = ({
 
             <Progress value={safePercentage} className="h-2" />
 
-            {/* NEW MESSAGE */}
             <p className="text-xs text-center text-gray-400">
               {attendanceMessage}
             </p>
+          </div>
+
+          {/* NEW: SUMMARY SECTION */}
+          <div className="p-4 rounded-lg bg-gray-800/40 border border-gray-700 space-y-2">
+            <SummaryRow label="Total Days" value={myStats.totalDays} />
+            <SummaryRow label="Present Days" value={myStats.present} />
+            <SummaryRow label="Late Days" value={myStats.late} />
+            <SummaryRow label="Absent Days" value={myStats.absent} />
+            <SummaryRow label="Performance" value={
+              <span className={performanceColor}>{performanceLevel}</span>
+            } />
           </div>
 
           {/* Insights */}
@@ -280,7 +297,7 @@ const MonthlyStatsCard: React.FC<Props> = ({
       <Card className="bg-gray-900/60 border-gray-800 backdrop-blur-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-white">
-            <Activity className="h-5 w-5 text-purple-500" />
+            <BarChart3 className="h-5 w-5 text-purple-500" />
             Attendance Distribution
           </CardTitle>
         </CardHeader>
