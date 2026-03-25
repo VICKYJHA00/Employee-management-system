@@ -34,6 +34,9 @@ import { CHART_COLORS } from './types';
 /* TYPES                                                 */
 /* ===================================================== */
 
+/**
+ * Represents monthly attendance statistics
+ */
 interface MonthlyStats {
   present: number;
   late: number;
@@ -43,6 +46,9 @@ interface MonthlyStats {
   percentage: number;
 }
 
+/**
+ * Props for MonthlyStatsCard component
+ */
 interface Props {
   selectedMonth: Date;
   setSelectedMonth: (date: Date) => void;
@@ -53,6 +59,9 @@ interface Props {
 /* HELPER COMPONENTS                                     */
 /* ===================================================== */
 
+/**
+ * Small reusable stat box UI
+ */
 const StatBox = ({
   label,
   value,
@@ -70,6 +79,9 @@ const StatBox = ({
   );
 };
 
+/**
+ * Displays small insights (like performance level)
+ */
 const InsightBox = ({
   title,
   value,
@@ -96,6 +108,8 @@ const MonthlyStatsCard: React.FC<Props> = ({
   /* ============================= */
   /* CHART DATA                    */
   /* ============================= */
+
+  // Prepare data for pie chart visualization
   const chartData = useMemo(() => [
     { name: 'Present', value: myStats.present, color: CHART_COLORS[0] },
     { name: 'Late', value: myStats.late, color: CHART_COLORS[1] },
@@ -105,6 +119,8 @@ const MonthlyStatsCard: React.FC<Props> = ({
   /* ============================= */
   /* DERIVED INSIGHTS              */
   /* ============================= */
+
+  // Determine best performance insight
   const bestMetric = useMemo(() => {
     if (myStats.present >= myStats.late && myStats.present >= myStats.absent) {
       return "Great consistency";
@@ -115,6 +131,7 @@ const MonthlyStatsCard: React.FC<Props> = ({
     return "Needs improvement";
   }, [myStats]);
 
+  // Determine overall performance level
   const performanceLevel = useMemo(() => {
     if (myStats.percentage >= 85) return "Excellent";
     if (myStats.percentage >= 70) return "Good";
@@ -123,8 +140,16 @@ const MonthlyStatsCard: React.FC<Props> = ({
   }, [myStats]);
 
   /* ============================= */
+  /* EXTRA SMALL HELPER (NEW)      */
+  /* ============================= */
+
+  // Safe percentage (avoids NaN edge cases)
+  const safePercentage = myStats.totalDays > 0 ? myStats.percentage : 0;
+
+  /* ============================= */
   /* EMPTY STATE                   */
   /* ============================= */
+
   const isEmpty =
     myStats.present === 0 &&
     myStats.late === 0 &&
@@ -144,7 +169,7 @@ const MonthlyStatsCard: React.FC<Props> = ({
         <CardHeader>
           <div className="flex items-center justify-between">
 
-            {/* Title */}
+            {/* Title Section */}
             <div>
               <CardTitle className="flex items-center gap-2 text-white">
                 <TrendingUp className="h-5 w-5 text-blue-500" />
@@ -191,7 +216,7 @@ const MonthlyStatsCard: React.FC<Props> = ({
             <StatBox label="Present" value={myStats.present} colorClass="bg-blue-500/10 border-blue-500/20 text-blue-500" />
             <StatBox label="Late" value={myStats.late} colorClass="bg-yellow-500/10 border-yellow-500/20 text-yellow-400" />
             <StatBox label="Absent" value={myStats.absent} colorClass="bg-red-500/10 border-red-500/20 text-red-400" />
-            <StatBox label="Score %" value={`${myStats.percentage}%`} colorClass="bg-gray-800 border-gray-700 text-white" />
+            <StatBox label="Score %" value={`${safePercentage}%`} colorClass="bg-gray-800 border-gray-700 text-white" />
           </div>
 
           {/* Progress */}
@@ -201,7 +226,7 @@ const MonthlyStatsCard: React.FC<Props> = ({
               <span>{myStats.score.toFixed(1)} / {myStats.totalDays}</span>
             </div>
 
-            <Progress value={myStats.percentage} className="h-2" />
+            <Progress value={safePercentage} className="h-2" />
 
             <p className="text-xs text-gray-500 text-center">
               Present = 1, Late = 0.5, Absent = 0
@@ -229,7 +254,6 @@ const MonthlyStatsCard: React.FC<Props> = ({
         </CardHeader>
 
         <CardContent>
-
           <div className="h-[250px]">
 
             {!isEmpty ? (
@@ -262,7 +286,6 @@ const MonthlyStatsCard: React.FC<Props> = ({
             )}
 
           </div>
-
         </CardContent>
       </Card>
 
