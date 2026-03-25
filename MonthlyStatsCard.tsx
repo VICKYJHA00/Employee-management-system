@@ -34,9 +34,6 @@ import { CHART_COLORS } from './types';
 /* TYPES                                                 */
 /* ===================================================== */
 
-/**
- * Represents monthly attendance statistics
- */
 interface MonthlyStats {
   present: number;
   late: number;
@@ -46,9 +43,6 @@ interface MonthlyStats {
   percentage: number;
 }
 
-/**
- * Props for MonthlyStatsCard component
- */
 interface Props {
   selectedMonth: Date;
   setSelectedMonth: (date: Date) => void;
@@ -56,32 +50,53 @@ interface Props {
 }
 
 /* ===================================================== */
-/* HELPER COMPONENTS                                     */
+/* SMALL HELPERS (NEW)                                   */
 /* ===================================================== */
 
 /**
- * Small reusable stat box UI
+ * Calculate attendance ratio safely
  */
+const calculateRatio = (value: number, total: number) => {
+  if (total === 0) return 0;
+  return Math.round((value / total) * 100);
+};
+
+/**
+ * Format percentage display
+ */
+const formatPercentage = (value: number) => `${value}%`;
+
+/* ===================================================== */
+/* HELPER COMPONENTS                                     */
+/* ===================================================== */
+
 const StatBox = ({
   label,
   value,
+  percentage,
   colorClass,
 }: {
   label: string;
-  value: number | string;
+  value: number;
+  percentage?: number;
   colorClass: string;
 }) => {
   return (
     <div className={`text-center p-4 rounded-xl border ${colorClass}`}>
       <p className="text-2xl font-bold">{value}</p>
+
+      {/* NEW: show percentage if available */}
+      {percentage !== undefined && (
+        <p className="text-[10px] text-gray-400">
+          {percentage}%
+        </p>
+      )}
+
       <p className="text-xs text-gray-400">{label}</p>
     </div>
   );
 };
 
-/**
- * Displays small insights (like performance level)
- */
 const InsightBox = ({
   title,
   value,
@@ -106,10 +121,16 @@ const MonthlyStatsCard: React.FC<Props> = ({
 }) => {
 
   /* ============================= */
+  /* SAFE VALUES                   */
+  /* ============================= */
+
+  const safePercentage =
+    myStats.totalDays > 0 ? myStats.percentage : 0;
+
+  /* ============================= */
   /* CHART DATA                    */
   /* ============================= */
 
-  // Prepare data for pie chart visualization
   const chartData = useMemo(() => [
     { name: 'Present', value: myStats.present, color: CHART_COLORS[0] },
     { name: 'Late', value: myStats.late, color: CHART_COLORS[1] },
@@ -117,10 +138,17 @@ const MonthlyStatsCard: React.FC<Props> = ({
   ], [myStats]);
 
   /* ============================= */
-  /* DERIVED INSIGHTS              */
+  /* DERIVED VALUES (NEW)          */
   /* ============================= */
 
-  // Determine best performance insight
+  const presentRatio = calculateRatio(myStats.present, myStats.totalDays);
+  const lateRatio = calculateRatio(myStats.late, myStats.totalDays);
+  const absentRatio = calculateRatio(myStats.absent, myStats.totalDays);
+
+  /* ============================= */
+  /* INSIGHTS                      */
+  /* ============================= */
+
   const bestMetric = useMemo(() => {
     if (myStats.present >= myStats.late && myStats.present >= myStats.absent) {
       return "Great consistency";
@@ -131,20 +159,23 @@ const MonthlyStatsCard: React.FC<Props> = ({
     return "Needs improvement";
   }, [myStats]);
 
-  // Determine overall performance level
   const performanceLevel = useMemo(() => {
-    if (myStats.percentage >= 85) return "Excellent";
-    if (myStats.percentage >= 70) return "Good";
-    if (myStats.percentage >= 50) return "Average";
+    if (safePercentage >= 85) return "Excellent";
+    if (safePercentage >= 70) return "Good";
+    if (safePercentage >= 50) return "Average";
     return "Poor";
-  }, [myStats]);
+  }, [safePercentage]);
 
   /* ============================= */
-  /* EXTRA SMALL HELPER (NEW)      */
+  /* EXTRA SMALL FEATURE (NEW)     */
   /* ============================= */
 
-  // Safe percentage (avoids NaN edge cases)
-  const safePercentage = myStats.totalDays > 0 ? myStats.percentage : 0;
+  const attendanceMessage = useMemo(() => {
+    if (safePercentage >= 85) return "You're doing amazing this month 🚀";
+    if (safePercentage >= 70) return "Good job, keep improving 👍";
+    if (safePercentage >= 50) return "Try to improve consistency ⚡";
+    return "Needs serious improvement ⚠️";
+  }, [safePercentage]);
 
   /* ============================= */
   /* EMPTY STATE                   */
@@ -163,13 +194,13 @@ const MonthlyStatsCard: React.FC<Props> = ({
     <div className="space-y-6">
 
       {/* ========================= */}
-      {/* MAIN STATS CARD          */}
+      {/* MAIN CARD                */}
       {/* ========================= */}
       <Card className="bg-gray-900/60 border-gray-800 backdrop-blur-lg">
         <CardHeader>
           <div className="flex items-center justify-between">
 
-            {/* Title Section */}
+            {/* Title */}
             <div>
               <CardTitle className="flex items-center gap-2 text-white">
                 <TrendingUp className="h-5 w-5 text-blue-500" />
@@ -204,19 +235,19 @@ const MonthlyStatsCard: React.FC<Props> = ({
 
         <CardContent>
 
-          {/* Empty State */}
+          {/* Empty */}
           {isEmpty && (
             <div className="text-center text-gray-500 py-6">
               No attendance data available
             </div>
           )}
 
-          {/* Stats Grid */}
+          {/* Stats */}
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <StatBox label="Present" value={myStats.present} colorClass="bg-blue-500/10 border-blue-500/20 text-blue-500" />
-            <StatBox label="Late" value={myStats.late} colorClass="bg-yellow-500/10 border-yellow-500/20 text-yellow-400" />
-            <StatBox label="Absent" value={myStats.absent} colorClass="bg-red-500/10 border-red-500/20 text-red-400" />
-            <StatBox label="Score %" value={`${safePercentage}%`} colorClass="bg-gray-800 border-gray-700 text-white" />
+            <StatBox label="Present" value={myStats.present} percentage={presentRatio} colorClass="bg-blue-500/10 border-blue-500/20 text-blue-500" />
+            <StatBox label="Late" value={myStats.late} percentage={lateRatio} colorClass="bg-yellow-500/10 border-yellow-500/20 text-yellow-400" />
+            <StatBox label="Absent" value={myStats.absent} percentage={absentRatio} colorClass="bg-red-500/10 border-red-500/20 text-red-400" />
+            <StatBox label="Score %" value={safePercentage} colorClass="bg-gray-800 border-gray-700 text-white" />
           </div>
 
           {/* Progress */}
@@ -228,8 +259,9 @@ const MonthlyStatsCard: React.FC<Props> = ({
 
             <Progress value={safePercentage} className="h-2" />
 
-            <p className="text-xs text-gray-500 text-center">
-              Present = 1, Late = 0.5, Absent = 0
+            {/* NEW MESSAGE */}
+            <p className="text-xs text-center text-gray-400">
+              {attendanceMessage}
             </p>
           </div>
 
