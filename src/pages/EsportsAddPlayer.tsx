@@ -26,3 +26,14 @@ const EsportsAddPlayer: React.FC = () => {
 };
 
 export default EsportsAddPlayer;
+const [formData, setFormData] = useState({
+  player_name: '',
+  game_uid: '',
+  email: '',
+  tournament_name: '',
+  entry_fees: '',
+  payment_received: false
+});
+
+const [isLoading, setIsLoading] = useState(false);
+const [isFetching, setIsFetching] = useState(false);
