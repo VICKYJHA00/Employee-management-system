@@ -17,27 +17,168 @@ import { Database } from '@/types/database';
 import { useToast } from '@/components/ui/use-toast';
 import { roleNames } from '@/types/auth';
 import { castToAdminProfiles } from '@/utils/adminTypeCasting';
+import AccessRestrictedState from '@/components/AccessRestrictedState';
 
 type AdminProfile = Database['public']['Tables']['admins']['Row'] & { status?: string };
+
+import React, { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+
+/* ========================================================= */
+/* TYPES                                                     */
+/* ========================================================= */
+
+type AdminRole =
+  | "super_admin"
+  | "social_admin"
+  | "esports_admin"
+  | "tech_admin"
+  | "content_admin"
+  | "hr_admin";
+
+interface AdminProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: AdminRole;
+  avatar?: string;
+}
+
+/* ========================================================= */
+/* COMPONENT                                                 */
+/* ========================================================= */
 
 const AdminManagement: React.FC = () => {
   const { adminProfile } = useAuth();
   const { toast } = useToast();
+
+  /* ============================= */
+  /* STATE MANAGEMENT              */
+  /* ============================= */
+
   const [admins, setAdmins] = useState<AdminProfile[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState<boolean>(false);
+
   const [selectedAdmin, setSelectedAdmin] = useState<AdminProfile | null>(null);
-  const [newPassword, setNewPassword] = useState('');
+
+  const [newPassword, setNewPassword] = useState<string>("");
+
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    otp_email: '',
-    role: 'social_admin' as 'super_admin' | 'social_admin' | 'esports_admin' | 'tech_admin' | 'content_admin' | 'hr_admin',
-    password: '',
-    avatar: '',
-    avatarFile: null as File | null
+    name: "",
+    email: "",
+    otp_email: "",
+    role: "social_admin" as AdminRole,
+    password: "",
+    avatar: "",
+    avatarFile: null as File | null,
   });
+
+  /* ============================= */
+  /* HANDLERS                      */
+  /* ============================= */
+
+  const handleInputChange = (
+    field: keyof typeof formData,
+    value: string | File | null
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      email: "",
+      otp_email: "",
+      role: "social_admin",
+      password: "",
+      avatar: "",
+      avatarFile: null,
+    });
+  };
+
+  const openCreateDialog = () => {
+    resetForm();
+    setDialogOpen(true);
+  };
+
+  const openEditDialog = (admin: AdminProfile) => {
+    setSelectedAdmin(admin);
+    setFormData({
+      name: admin.name,
+      email: admin.email,
+      otp_email: "",
+      role: admin.role,
+      password: "",
+      avatar: admin.avatar || "",
+      avatarFile: null,
+    });
+    setDialogOpen(true);
+  };
+
+  const openPasswordDialog = (admin: AdminProfile) => {
+    setSelectedAdmin(admin);
+    setNewPassword("");
+    setPasswordDialogOpen(true);
+  };
+
+  /* ============================= */
+  /* SMALL VALIDATION (LIGHT)      */
+  /* ============================= */
+
+  const isFormValid = () => {
+    return (
+      formData.name.trim() !== "" &&
+      formData.email.trim() !== "" &&
+      formData.role !== ""
+    );
+  };
+
+  /* ============================= */
+  /* TOAST HELPERS                 */
+  /* ============================= */
+
+  const showSuccess = (message: string) => {
+    toast({
+      title: "Success",
+      description: message,
+    });
+  };
+
+  const showError = (message: string) => {
+    toast({
+      title: "Error",
+      description: message,
+      variant: "destructive",
+    });
+  };
+
+  /* ============================= */
+  /* DEBUG (OPTIONAL)              */
+  /* ============================= */
+
+  // console.log("Admins:", admins);
+  // console.log("Selected Admin:", selectedAdmin);
+
+  /* ========================================================= */
+  /* RETURN (UI PART COMES BELOW)                              */
+  /* ========================================================= */
+
+  return (
+    <div>
+      {/* UI will go here */}
+      <h1 className="text-xl font-bold">Admin Management</h1>
+    </div>
+  );
+};
+
+export default AdminManagement;
 
   useEffect(() => {
     fetchAdmins();
@@ -318,10 +459,7 @@ const AdminManagement: React.FC = () => {
   if (adminProfile?.role !== 'super_admin') {
     return (
       <ModuleLayout title="Access Denied">
-        <div className="text-center py-12">
-          <h3 className="text-lg font-semibold mb-2">Access Restricted</h3>
-          <p className="text-muted-foreground">Only Super Admins can access this module.</p>
-        </div>
+        <AccessRestrictedState />
       </ModuleLayout>
     );
   }

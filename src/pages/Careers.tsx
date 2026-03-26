@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,6 +34,21 @@ const Careers: React.FC = () => {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [aadharFile, setAadharFile] = useState<File | null>(null);
   const [additionalFiles, setAdditionalFiles] = useState<File[]>([]);
+
+  // Pre-compute stable random values for particles to avoid re-computing on every render
+  const particles = useMemo(() =>
+    Array.from({ length: 50 }, (_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      duration: `${8 + Math.random() * 4}s`,
+      delay: `${Math.random() * 5}s`,
+      colorClass:
+        i % 3 === 0 ? 'w-2 h-2 bg-blue-400/40' :
+        i % 3 === 1 ? 'w-1 h-1 bg-purple-400/40' :
+        'w-1.5 h-1.5 bg-cyan-400/30',
+    })),
+  []);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -202,19 +217,15 @@ const Careers: React.FC = () => {
         <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-gradient-to-r from-purple-600/15 to-indigo-600/15 rounded-full blur-3xl animate-[spin_25s_linear_infinite_reverse]"></div>
         
         {/* Floating particles */}
-        {Array.from({ length: 50 }, (_, i) => (
+        {particles.map((p) => (
           <div
-            key={i}
-            className={`absolute rounded-full ${
-              i % 3 === 0 ? 'w-2 h-2 bg-blue-400/40' : 
-              i % 3 === 1 ? 'w-1 h-1 bg-purple-400/40' : 
-              'w-1.5 h-1.5 bg-cyan-400/30'
-            }`}
+            key={p.id}
+            className={`absolute rounded-full ${p.colorClass}`}
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animation: `floating-particles ${8 + Math.random() * 4}s linear infinite`,
-              animationDelay: `${Math.random() * 5}s`,
+              left: p.left,
+              top: p.top,
+              animation: `floating-particles ${p.duration} linear infinite`,
+              animationDelay: p.delay,
             }}
           ></div>
         ))}

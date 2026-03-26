@@ -1,14 +1,20 @@
-import { useState, useEffect } from 'react';
+
+
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, CheckCircle2, Circle, ListTodo } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Plus, Trash2, CheckCircle2, Circle, ListTodo, CalendarDays, Flag, Search, Filter } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useActivityLogger, ActivityActions } from '@/hooks/useActivityLogger';
+
 
 interface Todo {
   id: string;
@@ -19,18 +25,38 @@ interface Todo {
   created_at: string;
 }
 
+
+const priorityColors: Record<string, string> = {
+  low: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  medium: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+  high: 'bg-red-500/10 text-red-400 border-red-500/20'
+};
+
+
 const DailyTodos = () => {
   const { adminProfile } = useAuth();
   const { logActivity } = useActivityLogger();
+  
+
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [filteredTodos, setFilteredTodos] = useState<Todo[]>([]);
   const [newTask, setNewTask] = useState('');
+  const [priority, setPriority] = useState('low');
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [openModal, setOpenModal] = useState(false);
+  
 
   useEffect(() => {
-    if (adminProfile) {
-      fetchTodos();
-    }
+    if (adminProfile) fetchTodos();
   }, [adminProfile]);
+  
+
+  useEffect(() => {
+    applyFilters();
+  }, [todos, search, filter]);
+  
 
   const fetchTodos = async () => {
     if (!adminProfile) return;
@@ -42,165 +68,254 @@ const DailyTodos = () => {
         .eq('admin_id', adminProfile.id)
         .eq('due_date', today)
         .order('created_at', { ascending: true });
+      
 
       if (error) throw error;
       setTodos((data || []) as Todo[]);
     } catch (error) {
-      console.error('Error fetching todos:', error);
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
   };
 
+
+  
+  const applyFilters = () => {
+    let data = [...todos];
+
+    
+
+    if (search) {
+      data = data.filter(t => t.title.toLowerCase().includes(search.toLowerCase()));
+    }
+
+    if (filter === 'active') data = data.filter(t => !t.is_completed);
+    if (filter === 'completed') data = data.filter(t => t.is_completed);
+
+    
+
+    setFilteredTodos(data);
+  };
+
   const addTodo = async () => {
-    if (!adminProfile || !newTask.trim()) return;
+    if (!newTask.trim() || !adminProfile) return;
+
+    
 
     try {
-      const { error } = await supabase
-        .from('admin_todos')
-        .insert({
-          admin_id: adminProfile.id,
-          title: newTask.trim(),
-          due_date: new Date().toISOString().split('T')[0]
-        } as any);
+      const { error } = await supabase.from('admin_todos').insert({
+        admin_id: adminProfile.id,
+        title: newTask,
+        priority,
+        due_date: new Date().toISOString().split('T')[0]
+      } as any);
 
       if (error) throw error;
 
-      // Log activity
-      await logActivity(ActivityActions.CREATE_TODO, {
-        task_title: newTask.trim()
-      });
+      await logActivity(ActivityActions.CREATE_TODO, { task_title: newTask });
 
+
+      
       setNewTask('');
+      setPriority('low');
+      setOpenModal(false);
       fetchTodos();
-      toast({ title: 'Task added' });
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+
+      
+
+      toast({ title: 'Task Added 🚀' });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
     }
   };
+
+  
 
   const toggleTodo = async (todo: Todo) => {
     try {
       const { error } = await supabase
         .from('admin_todos')
-        .update({ 
-          is_completed: !todo.is_completed,
-          completed_at: !todo.is_completed ? new Date().toISOString() : null
-        } as any)
+        .update({ is_completed: !todo.is_completed } as any)
         .eq('id', todo.id);
 
       if (error) throw error;
 
-      // Log completion activity
       if (!todo.is_completed) {
-        await logActivity(ActivityActions.COMPLETE_TODO, {
-          task_title: todo.title
-        });
+        await logActivity(ActivityActions.COMPLETE_TODO, { task_title: todo.title });
       }
 
       fetchTodos();
-    } catch (error) {
-      console.error('Error updating todo:', error);
+    } catch (err) {
+      console.error(err);
     }
   };
+
+  
 
   const deleteTodo = async (id: string, title: string) => {
     try {
-      const { error } = await supabase
-        .from('admin_todos')
-        .delete()
-        .eq('id', id);
-
+      const { error } = await supabase.from('admin_todos').delete().eq('id', id);
       if (error) throw error;
 
-      // Log deletion activity
-      await logActivity(ActivityActions.DELETE_TODO, {
-        task_title: title
-      });
-
+      await logActivity(ActivityActions.DELETE_TODO, { task_title: title });
       fetchTodos();
-    } catch (error) {
-      console.error('Error deleting todo:', error);
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const completedCount = todos.filter(t => t.is_completed).length;
-  const totalCount = todos.length;
-  const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+  
 
+  const stats = useMemo(() => {
+    const total = todos.length;
+    const completed = todos.filter(t => t.is_completed).length;
+    return {
+      total,
+      completed,
+      progress: total ? (completed / total) * 100 : 0
+    };
+  }, [todos]);
+
+
+  
   return (
-    <Card className="gradient-card border-white/10">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <ListTodo className="w-5 h-5 text-primary" />
-            Today's Tasks
-          </CardTitle>
-          <Badge variant="outline" className="text-xs">
-            {completedCount}/{totalCount}
-          </Badge>
-        </div>
-        <div className="space-y-1">
-          <Progress value={progress} className="h-2" />
-          <p className="text-xs text-muted-foreground text-right">{Math.round(progress)}% complete</p>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {/* Add Task Input */}
-        <div className="flex gap-2">
-          <Input
-            placeholder="Add a task..."
-            value={newTask}
-            onChange={(e) => setNewTask(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && addTodo()}
-            className="bg-black/30 border-white/10 text-sm"
-          />
-          <Button size="sm" onClick={addTodo} className="gradient-primary">
-            <Plus className="w-4 h-4" />
-          </Button>
-        </div>
+    <div className="space-y-6">
+      <Card className="border-white/10 bg-black/40 backdrop-blur-xl">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle className="flex gap-2 items-center">
+              <ListTodo className="w-5 h-5 text-primary" /> Daily Tasks
+            </CardTitle>
+            <Button size="sm" onClick={() => setOpenModal(true)}>
+              <Plus className="w-4 h-4 mr-1" /> Add
+            </Button>
+          </div>
 
-        {/* Todo List */}
-        <div className="space-y-2 max-h-[200px] overflow-y-auto">
-          {isLoading ? (
-            <div className="text-center py-4 text-muted-foreground text-sm">Loading...</div>
-          ) : todos.length === 0 ? (
-            <div className="text-center py-4 text-muted-foreground text-sm">
-              No tasks for today. Add one above!
+
+          
+          <Progress value={stats.progress} className="h-2" />
+          <p className="text-xs text-right text-muted-foreground">
+            {stats.completed}/{stats.total} completed
+          </p>
+        </CardHeader>
+
+        
+
+        <CardContent className="space-y-4">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-2 top-2.5 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search tasks..."
+                className="pl-8"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
-          ) : (
-            todos.map((todo) => (
-              <div
-                key={todo.id}
-                className={`flex items-center gap-2 p-2 rounded-lg transition-all ${
-                  todo.is_completed 
-                    ? 'bg-green-500/10 border border-green-500/20' 
-                    : 'bg-white/5 border border-white/10 hover:bg-white/10'
-                }`}
-              >
-                <button onClick={() => toggleTodo(todo)} className="flex-shrink-0">
-                  {todo.is_completed ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-500" />
-                  ) : (
-                    <Circle className="w-5 h-5 text-muted-foreground" />
-                  )}
-                </button>
-                <span className={`flex-1 text-sm ${todo.is_completed ? 'line-through text-muted-foreground' : ''}`}>
-                  {todo.title}
-                </span>
-                <button 
-                  onClick={() => deleteTodo(todo.id, todo.title)}
-                  className="p-1 hover:bg-red-500/20 rounded transition-colors"
+
+            
+
+            <Select onValueChange={(v:any)=>setFilter(v)}>
+              <SelectTrigger className="w-[130px]">
+                <SelectValue placeholder="Filter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="completed">Done</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          
+
+          <div className="space-y-2 max-h-[350px] overflow-y-auto">
+            {isLoading ? (
+              <p className="text-center text-sm">Loading...</p>
+            ) : filteredTodos.length === 0 ? (
+              <p className="text-center text-sm text-muted-foreground">No tasks found</p>
+            ) : (
+              filteredTodos.map(todo => (
+                <div
+                  key={todo.id}
+                  className={`flex items-center gap-3 p-3 rounded-xl border transition ${
+                    todo.is_completed ? 'bg-green-500/10 border-green-500/20' : 'bg-white/5 border-white/10'
+                  }`}
                 >
-                  <Trash2 className="w-4 h-4 text-red-400" />
-                </button>
-              </div>
-            ))
-          )}
-        </div>
-      </CardContent>
-    </Card>
+                  <button onClick={() => toggleTodo(todo)}>
+                    {todo.is_completed ? (
+                      <CheckCircle2 className="text-green-500" />
+                    ) : (
+                      <Circle className="text-muted-foreground" />
+                    )}
+                  </button>
+
+                  
+
+                  <div className="flex-1">
+                    <p className={`${todo.is_completed && 'line-through text-muted-foreground'}`}>
+                      {todo.title}
+                    </p>
+                    <div className="flex gap-2 mt-1">
+                      <Badge className={priorityColors[todo.priority]}>
+                        <Flag className="w-3 h-3 mr-1" /> {todo.priority}
+                      </Badge>
+                      <Badge variant="outline">
+                        <CalendarDays className="w-3 h-3 mr-1" /> Today
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <Button size="icon" variant="ghost" onClick={() => deleteTodo(todo.id, todo.title)}>
+                    <Trash2 className="w-4 h-4 text-red-400" />
+                  </Button>
+                </div>
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      
+
+      {/* Add Modal */}
+      <Dialog open={openModal} onOpenChange={setOpenModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Task</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <Input
+              placeholder="Task title"
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+            />
+
+            <Select value={priority} onValueChange={setPriority}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+              </SelectContent>
+            </Select>
+
+            
+
+            <Button className="w-full" onClick={addTodo}>
+              Add Task
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
+
+
 
 export default DailyTodos;

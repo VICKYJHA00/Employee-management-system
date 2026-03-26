@@ -414,66 +414,66 @@ const AdminEmployeeProfile: React.FC = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {/* Personal Information */}
       <div className="lg:col-span-3">
-        <h3 className="text-lg font-semibold mb-3 text-foreground">Personal Information</h3>
+        <h3 className="text-lg font-semibold mb-3 text-white">Personal Information</h3>
       </div>
       
       <div>
-        <Label className="text-gray-700">Employee ID</Label>
+        <Label>Employee ID</Label>
         <Input
           value={formData.employee_id}
           onChange={(e) => setFormData({ ...formData, employee_id: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
       <div>
-        <Label className="text-gray-700">Full Name *</Label>
+        <Label>Full Name *</Label>
         <Input
           value={formData.full_name}
           onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
           disabled={readOnly}
           required
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
       <div>
-        <Label className="text-gray-700">Email *</Label>
+        <Label>Email *</Label>
         <Input
           type="email"
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           disabled={readOnly}
           required
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
       <div>
-        <Label className="text-gray-700">Phone</Label>
+        <Label>Phone</Label>
         <Input
           value={formData.phone}
           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
       <div>
-        <Label className="text-gray-700">Date of Birth</Label>
+        <Label>Date of Birth</Label>
         <Input
           type="date"
           value={formData.date_of_birth}
           onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
       <div>
-        <Label className="text-gray-700">Gender</Label>
+        <Label>Gender</Label>
         <Select
           value={formData.gender}
           onValueChange={(v) => setFormData({ ...formData, gender: v })}
           disabled={readOnly}
         >
-          <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+          <SelectTrigger className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0">
             <SelectValue placeholder="Select gender" />
           </SelectTrigger>
           <SelectContent>
@@ -484,13 +484,13 @@ const AdminEmployeeProfile: React.FC = () => {
         </Select>
       </div>
       <div>
-        <Label className="text-gray-700">Marital Status</Label>
+        <Label>Marital Status</Label>
         <Select
           value={formData.marital_status}
           onValueChange={(v) => setFormData({ ...formData, marital_status: v })}
           disabled={readOnly}
         >
-          <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+          <SelectTrigger className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0">
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
           <SelectContent>
@@ -504,271 +504,270 @@ const AdminEmployeeProfile: React.FC = () => {
 
       {/* Work Information */}
       <div className="lg:col-span-3 mt-4">
-        <h3 className="text-lg font-semibold mb-3 text-foreground">Work Information</h3>
+        <h3 className="text-lg font-semibold mb-3 text-white">Work Information</h3>
       </div>
       
       <div>
-        <Label className="text-gray-700">Date of Joining</Label>
+        <Label>Date of Joining</Label>
         <Input
           type="date"
           value={formData.date_of_joining}
           onChange={(e) => setFormData({ ...formData, date_of_joining: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
       <div>
-        <Label className="text-gray-700">Department</Label>
+        <Label>Department</Label>
         <Input
           value={formData.department}
           onChange={(e) => setFormData({ ...formData, department: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
       <div>
-        <Label className="text-gray-700">Designation</Label>
+        <Label>Designation</Label>
         <Input
           value={formData.designation}
           onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
       <div>
-        <Label className="text-gray-700">Salary</Label>
+        <Label>Salary</Label>
         <Input
           type="number"
           value={formData.salary}
           onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
 
       {/* Address */}
       <div className="lg:col-span-3 mt-4">
-        <h3 className="text-lg font-semibold mb-3 text-foreground">Address Information</h3>
+        <h3 className="text-lg font-semibold mb-3 text-white">Address Information</h3>
       </div>
       
       <div className="lg:col-span-2">
-        <Label className="text-gray-700">Current Address</Label>
+        <Label>Current Address</Label>
         <Textarea
           value={formData.current_address}
           onChange={(e) => setFormData({ ...formData, current_address: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
       <div className="lg:col-span-1">
-        <Label className="text-gray-700">City</Label>
+        <Label>City</Label>
         <Input
           value={formData.city}
           onChange={(e) => setFormData({ ...formData, city: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
       <div>
-        <Label className="text-gray-700">State</Label>
+        <Label>State</Label>
         <Input
           value={formData.state}
           onChange={(e) => setFormData({ ...formData, state: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
       <div>
-        <Label className="text-gray-700">Pincode</Label>
+        <Label>Pincode</Label>
         <Input
           value={formData.pincode}
           onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
       <div className="lg:col-span-2">
-        <Label className="text-gray-700">Permanent Address</Label>
+        <Label>Permanent Address</Label>
         <Textarea
           value={formData.permanent_address}
           onChange={(e) => setFormData({ ...formData, permanent_address: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
 
       {/* ID Documents */}
       <div className="lg:col-span-3 mt-4">
-        <h3 className="text-lg font-semibold mb-3 text-foreground">ID Documents</h3>
+        <h3 className="text-lg font-semibold mb-3 text-white">ID Documents</h3>
       </div>
       
       <div>
-        <Label className="text-gray-700">Aadhar Number</Label>
+        <Label>Aadhar Number</Label>
         <Input
           value={formData.aadhar_number}
           onChange={(e) => setFormData({ ...formData, aadhar_number: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
       <div>
-        <Label className="text-gray-700">PAN Number</Label>
+        <Label>PAN Number</Label>
         <Input
           value={formData.pan_number}
           onChange={(e) => setFormData({ ...formData, pan_number: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
 
       {/* Bank Details */}
       <div className="lg:col-span-3 mt-4">
-        <h3 className="text-lg font-semibold mb-3 text-foreground">Bank Details</h3>
+        <h3 className="text-lg font-semibold mb-3 text-white">Bank Details</h3>
       </div>
       
       <div>
-        <Label className="text-gray-700">Bank Name</Label>
+        <Label>Bank Name</Label>
         <Input
           value={formData.bank_name}
           onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
       <div>
-        <Label className="text-gray-700">Account Number</Label>
+        <Label>Account Number</Label>
         <Input
           value={formData.bank_account_number}
           onChange={(e) => setFormData({ ...formData, bank_account_number: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
       <div>
-        <Label className="text-gray-700">IFSC Code</Label>
+        <Label>IFSC Code</Label>
         <Input
           value={formData.ifsc_code}
           onChange={(e) => setFormData({ ...formData, ifsc_code: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
       <div>
-        <Label className="text-gray-700">UPI ID</Label>
+        <Label>UPI ID</Label>
         <Input
           value={formData.upi_id}
           onChange={(e) => setFormData({ ...formData, upi_id: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
 
       {/* Emergency Contact */}
       <div className="lg:col-span-3 mt-4">
-        <h3 className="text-lg font-semibold mb-3 text-foreground">Emergency Contact</h3>
+        <h3 className="text-lg font-semibold mb-3 text-white">Emergency Contact</h3>
       </div>
       
       <div>
-        <Label className="text-gray-700">Contact Name</Label>
+        <Label>Contact Name</Label>
         <Input
           value={formData.emergency_contact_name}
           onChange={(e) => setFormData({ ...formData, emergency_contact_name: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
       <div>
-        <Label className="text-gray-700">Contact Phone</Label>
+        <Label>Contact Phone</Label>
         <Input
           value={formData.emergency_contact_phone}
           onChange={(e) => setFormData({ ...formData, emergency_contact_phone: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
       <div>
-        <Label className="text-gray-700">Relationship</Label>
+        <Label>Relationship</Label>
         <Input
           value={formData.emergency_contact_relation}
           onChange={(e) => setFormData({ ...formData, emergency_contact_relation: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
       </div>
 
       {/* Notes */}
       <div className="lg:col-span-3 mt-4">
-        <Label className="text-gray-700">Additional Notes</Label>
+        <Label>Additional Notes</Label>
         <Textarea
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
           disabled={readOnly}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
           rows={3}
         />
       </div>
     </div>
   );
-  
 
   const renderDocumentUploads = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
       <div className="lg:col-span-2">
-        <h3 className="text-lg font-semibold mb-3 text-foreground">Document Uploads</h3>
+        <h3 className="text-lg font-semibold mb-3 text-white">Document Uploads</h3>
       </div>
       
       <div>
-        <Label className="text-gray-700">Profile Image</Label>
+        <Label>Profile Image</Label>
         <Input
           type="file"
           accept="image/*"
           onChange={(e) => setFiles({ ...files, profile_image: e.target.files?.[0] || null })}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
         {myData?.profile_image_url && (
-          <a href={myData.profile_image_url} target="_blank" className="text-sm text-blue-500 hover:underline mt-1 block">
+          <a href={myData.profile_image_url} target="_blank" className="text-xs text-blue-400 hover:underline mt-1 block">
             View current image
           </a>
         )}
       </div>
       <div>
-        <Label className="text-gray-700">Aadhar Document</Label>
+        <Label>Aadhar Document</Label>
         <Input
           type="file"
           accept="image/*,.pdf"
           onChange={(e) => setFiles({ ...files, aadhar_document: e.target.files?.[0] || null })}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
         {myData?.aadhar_document_url && (
-          <a href={myData.aadhar_document_url} target="_blank" className="text-sm text-blue-500 hover:underline mt-1 block">
+          <a href={myData.aadhar_document_url} target="_blank" className="text-xs text-blue-400 hover:underline mt-1 block">
             View current document
           </a>
         )}
       </div>
       <div>
-        <Label className="text-gray-700">PAN Document</Label>
+        <Label>PAN Document</Label>
         <Input
           type="file"
           accept="image/*,.pdf"
           onChange={(e) => setFiles({ ...files, pan_document: e.target.files?.[0] || null })}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
         {myData?.pan_document_url && (
-          <a href={myData.pan_document_url} target="_blank" className="text-sm text-blue-500 hover:underline mt-1 block">
+          <a href={myData.pan_document_url} target="_blank" className="text-xs text-blue-400 hover:underline mt-1 block">
             View current document
           </a>
         )}
       </div>
       <div>
-        <Label className="text-gray-700">Offer Letter</Label>
+        <Label>Offer Letter</Label>
         <Input
           type="file"
           accept="image/*,.pdf"
           onChange={(e) => setFiles({ ...files, offer_letter: e.target.files?.[0] || null })}
-          className="bg-white border-gray-300 text-gray-900"
+          className="bg-black/60 border border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:ring-0"
         />
         {myData?.offer_letter_url && (
-          <a href={myData.offer_letter_url} target="_blank" className="text-sm text-blue-500 hover:underline mt-1 block">
+          <a href={myData.offer_letter_url} target="_blank" className="text-xs text-blue-400 hover:underline mt-1 block">
             View current document
           </a>
         )}
@@ -784,55 +783,53 @@ const AdminEmployeeProfile: React.FC = () => {
     );
   }
 
-  
   return (
     <ModuleLayout
       title="Employee Profile"
       description="Manage your employee information and documents"
     >
       <Tabs defaultValue="my-profile" className="space-y-6">
-        <TabsList className="bg-gray-100 border border-gray-200">
-          <TabsTrigger value="my-profile" className="data-[state=active]:bg-white data-[state=active]:text-gray-900">
-            <User className="w-4 h-4 mr-2 text-blue-500" />
+        <TabsList className="bg-black/70 border border-white/10 backdrop-blur-xl">
+          <TabsTrigger value="my-profile" className="data-[state=active]:bg-white/10 text-white">
+            <User className="w-4 h-4 mr-2" />
             My Profile
           </TabsTrigger>
           {isSuperAdmin && (
-            <TabsTrigger value="all-admins" className="data-[state=active]:bg-white data-[state=active]:text-gray-900">
-              <Users className="w-4 h-4 mr-2 text-blue-500" />
+            <TabsTrigger value="all-admins" className="data-[state=active]:bg-white/10 text-white">
+              <Users className="w-4 h-4 mr-2" />
               All Admins Data
             </TabsTrigger>
           )}
         </TabsList>
-        
 
         <TabsContent value="my-profile">
-          <Card className="bg-white border-gray-200 shadow-sm">
-            <CardHeader className="border-b border-gray-100">
-              <CardTitle className="flex items-center gap-2 text-gray-900">
+          <Card className="bg-black/80 backdrop-blur-xl border border-white/10 shadow-xl bg-black/80 backdrop-blur-xl border border-white/10 shadow-xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
                 {myData?.is_locked ? (
                   <>
-                    <Lock className="w-5 h-5 text-amber-500" />
+                    <Lock className="w-5 h-5 text-yellow-400" />
                     Profile Locked
                   </>
                 ) : (
                   <>
-                    <Edit className="w-5 h-5 text-blue-500" />
+                    <Edit className="w-5 h-5 text-blue-400" />
                     Edit Profile
                   </>
                 )}
               </CardTitle>
-              <CardDescription className="text-gray-600">
+              <CardDescription>
                 {myData?.is_locked 
                   ? "Your profile has been submitted and locked. Contact super admin for any changes."
                   : "Fill in your employee details. Once submitted and locked, only super admins can edit."}
               </CardDescription>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent>
               {myData?.is_locked ? (
                 <>
-                  <Alert className="mb-6 border-amber-200 bg-amber-50">
-                    <Lock className="h-4 w-4 text-amber-600" />
-                    <AlertDescription className="text-amber-700">
+                  <Alert className="mb-6 border-yellow-500/20 bg-yellow-500/10">
+                    <Lock className="h-4 w-4 text-yellow-400" />
+                    <AlertDescription className="text-yellow-400">
                       This profile was locked on {new Date(myData.locked_at!).toLocaleDateString()}. 
                       Contact super admin if you need to make changes.
                     </AlertDescription>
@@ -842,22 +839,22 @@ const AdminEmployeeProfile: React.FC = () => {
                   {/* Show document links */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
                     {myData.profile_image_url && (
-                      <a href={myData.profile_image_url} target="_blank" className="text-blue-500 hover:underline">
+                      <a href={myData.profile_image_url} target="_blank" className="text-blue-400 hover:underline">
                         📷 View Profile Image
                       </a>
                     )}
                     {myData.aadhar_document_url && (
-                      <a href={myData.aadhar_document_url} target="_blank" className="text-blue-500 hover:underline">
+                      <a href={myData.aadhar_document_url} target="_blank" className="text-blue-400 hover:underline">
                         📄 View Aadhar
                       </a>
                     )}
                     {myData.pan_document_url && (
-                      <a href={myData.pan_document_url} target="_blank" className="text-blue-500 hover:underline">
+                      <a href={myData.pan_document_url} target="_blank" className="text-blue-400 hover:underline">
                         📄 View PAN
                       </a>
                     )}
                     {myData.offer_letter_url && (
-                      <a href={myData.offer_letter_url} target="_blank" className="text-blue-500 hover:underline">
+                      <a href={myData.offer_letter_url} target="_blank" className="text-blue-400 hover:underline">
                         📄 View Offer Letter
                       </a>
                     )}
@@ -872,16 +869,15 @@ const AdminEmployeeProfile: React.FC = () => {
                     <Button
                       onClick={() => handleSubmit(false)}
                       disabled={isSaving}
-                      variant="outline"
-                      className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                      className="border-white/20 text-white hover:bg-white/5"
                     >
-                      <Save className="w-4 h-4 mr-2 text-blue-500" />
+                      <Save className="w-4 h-4 mr-2" />
                       Save Draft
                     </Button>
                     <Button
                       onClick={() => setConfirmDialogOpen(true)}
                       disabled={isSaving || !formData.full_name || !formData.email}
-                      className="bg-blue-500 hover:bg-blue-600 text-white"
+                      className="bg-white text-black hover:bg-gray-200 font-semibold"
                     >
                       <Lock className="w-4 h-4 mr-2" />
                       Submit & Lock
@@ -892,52 +888,51 @@ const AdminEmployeeProfile: React.FC = () => {
             </CardContent>
           </Card>
         </TabsContent>
-        
 
         {isSuperAdmin && (
           <TabsContent value="all-admins">
-            <Card className="bg-white border-gray-200 shadow-sm">
-              <CardHeader className="border-b border-gray-100">
-                <CardTitle className="text-gray-900">All Admin Employee Data</CardTitle>
-                <CardDescription className="text-gray-600">View and edit employee data for all admins</CardDescription>
+            <Card className="bg-black/80 backdrop-blur-xl border border-white/10 shadow-xl bg-black/80 backdrop-blur-xl border border-white/10 shadow-xl">
+              <CardHeader>
+                <CardTitle>All Admin Employee Data</CardTitle>
+                <CardDescription>View and edit employee data for all admins</CardDescription>
               </CardHeader>
-              <CardContent className="pt-6">
+              <CardContent>
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-gray-200">
-                      <TableHead className="text-gray-700">Admin Name</TableHead>
-                      <TableHead className="text-gray-700">Employee ID</TableHead>
-                      <TableHead className="text-gray-700">Department</TableHead>
-                      <TableHead className="text-gray-700">Designation</TableHead>
-                      <TableHead className="text-gray-700">Status</TableHead>
-                      <TableHead className="text-gray-700">Actions</TableHead>
+                    <TableRow>
+                      <TableHead>Admin Name</TableHead>
+                      <TableHead>Employee ID</TableHead>
+                      <TableHead>Department</TableHead>
+                      <TableHead>Designation</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {allAdminsData.map((data) => (
-                      <TableRow key={data.id} className="border-gray-200">
-                        <TableCell className="text-gray-900">{data.admin_name}</TableCell>
-                        <TableCell className="text-gray-600">{data.employee_id || '-'}</TableCell>
-                        <TableCell className="text-gray-600">{data.department || '-'}</TableCell>
-                        <TableCell className="text-gray-600">{data.designation || '-'}</TableCell>
+                      <TableRow key={data.id}>
+                        <TableCell>{data.admin_name}</TableCell>
+                        <TableCell>{data.employee_id || '-'}</TableCell>
+                        <TableCell>{data.department || '-'}</TableCell>
+                        <TableCell>{data.designation || '-'}</TableCell>
                         <TableCell>
                           {data.is_locked ? (
-                            <Badge className="bg-amber-100 text-amber-700 border-amber-200">
+                            <Badge className="bg-yellow-500/10 text-yellow-400 border-yellow-500/20">
                               <Lock className="w-3 h-3 mr-1" /> Locked
                             </Badge>
                           ) : (
-                            <Badge className="bg-gray-100 text-gray-700 border-gray-200">
+                            <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20">
                               <Edit className="w-3 h-3 mr-1" /> Editable
                             </Badge>
                           )}
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Button size="sm" variant="ghost" onClick={() => openViewDialog(data)} className="hover:bg-gray-100">
-                              <Eye className="w-4 h-4 text-blue-500" />
+                            <Button size="sm" variant="ghost" onClick={() => openViewDialog(data)}>
+                              <Eye className="w-4 h-4" />
                             </Button>
-                            <Button size="sm" variant="ghost" onClick={() => openEditDialog(data)} className="hover:bg-gray-100">
-                              <Edit className="w-4 h-4 text-blue-500" />
+                            <Button size="sm" variant="ghost" onClick={() => openEditDialog(data)}>
+                              <Edit className="w-4 h-4" />
                             </Button>
                           </div>
                         </TableCell>
@@ -945,7 +940,7 @@ const AdminEmployeeProfile: React.FC = () => {
                     ))}
                     {allAdminsData.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center text-gray-500 py-8">
+                        <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                           No admin employee data submitted yet
                         </TableCell>
                       </TableRow>
@@ -957,96 +952,94 @@ const AdminEmployeeProfile: React.FC = () => {
           </TabsContent>
         )}
       </Tabs>
-      
 
       {/* Confirmation Dialog */}
       <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
-        <DialogContent className="bg-white border-gray-200">
+        <DialogContent className="bg-black/90 border border-white/10 text-white backdrop-blur-xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-amber-600">
+            <DialogTitle className="flex items-center gap-2 text-yellow-400">
               <AlertTriangle className="w-5 h-5" />
               Confirm Submission
             </DialogTitle>
             <DialogDescription>
-              <Alert className="mt-4 border-amber-200 bg-amber-50">
-                <AlertTriangle className="h-4 w-4 text-amber-600" />
-                <AlertDescription className="text-amber-700">
+              <Alert className="mt-4 border-yellow-500/20 bg-yellow-500/10">
+                <AlertTriangle className="h-4 w-4 text-yellow-400" />
+                <AlertDescription className="text-yellow-400">
                   <strong>Warning:</strong> Once you submit and lock your profile, you will NOT be able to edit it anymore. 
                   Only a Super Admin can make changes after locking.
                 </AlertDescription>
               </Alert>
-              <p className="mt-4 text-gray-600">
+              <p className="mt-4 text-muted-foreground">
                 Please review all your information carefully before proceeding. Are you sure you want to submit and lock your employee profile?
               </p>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmDialogOpen(false)} className="border-gray-300 text-gray-700">
+            <Button className="border-white/20 text-white hover:bg-white/5" onClick={() => setConfirmDialogOpen(false)}>
               Cancel
             </Button>
             <Button 
               onClick={() => handleSubmit(true)} 
               disabled={isSaving}
-              className="bg-amber-500 hover:bg-amber-600 text-white"
+              className="bg-yellow-600 hover:bg-yellow-700"
             >
               {isSaving ? 'Submitting...' : 'Yes, Submit & Lock'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
 
       {/* View Dialog */}
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="bg-white border-gray-200 max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="bg-black/80 backdrop-blur-xl border border-white/10 shadow-xl bg-black/80 backdrop-blur-xl border border-white/10 shadow-xl max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-gray-900">View Employee Data - {selectedData?.full_name}</DialogTitle>
+            <DialogTitle>View Employee Data - {selectedData?.full_name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             {selectedData && (
               <>
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="text-gray-600"><strong className="text-gray-900">Employee ID:</strong> {selectedData.employee_id || '-'}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">Email:</strong> {selectedData.email}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">Phone:</strong> {selectedData.phone || '-'}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">DOB:</strong> {selectedData.date_of_birth || '-'}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">Gender:</strong> {selectedData.gender || '-'}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">Marital Status:</strong> {selectedData.marital_status || '-'}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">Department:</strong> {selectedData.department || '-'}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">Designation:</strong> {selectedData.designation || '-'}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">Date of Joining:</strong> {selectedData.date_of_joining || '-'}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">Salary:</strong> {selectedData.salary || '-'}</div>
-                  <div className="col-span-2 text-gray-600"><strong className="text-gray-900">Current Address:</strong> {selectedData.current_address || '-'}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">City:</strong> {selectedData.city || '-'}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">State:</strong> {selectedData.state || '-'}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">Pincode:</strong> {selectedData.pincode || '-'}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">Aadhar:</strong> {selectedData.aadhar_number || '-'}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">PAN:</strong> {selectedData.pan_number || '-'}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">Bank:</strong> {selectedData.bank_name || '-'}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">Account:</strong> {selectedData.bank_account_number || '-'}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">IFSC:</strong> {selectedData.ifsc_code || '-'}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">UPI:</strong> {selectedData.upi_id || '-'}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">Emergency Contact:</strong> {selectedData.emergency_contact_name || '-'}</div>
-                  <div className="text-gray-600"><strong className="text-gray-900">Emergency Phone:</strong> {selectedData.emergency_contact_phone || '-'}</div>
+                  <div><strong>Employee ID:</strong> {selectedData.employee_id || '-'}</div>
+                  <div><strong>Email:</strong> {selectedData.email}</div>
+                  <div><strong>Phone:</strong> {selectedData.phone || '-'}</div>
+                  <div><strong>DOB:</strong> {selectedData.date_of_birth || '-'}</div>
+                  <div><strong>Gender:</strong> {selectedData.gender || '-'}</div>
+                  <div><strong>Marital Status:</strong> {selectedData.marital_status || '-'}</div>
+                  <div><strong>Department:</strong> {selectedData.department || '-'}</div>
+                  <div><strong>Designation:</strong> {selectedData.designation || '-'}</div>
+                  <div><strong>Date of Joining:</strong> {selectedData.date_of_joining || '-'}</div>
+                  <div><strong>Salary:</strong> {selectedData.salary || '-'}</div>
+                  <div className="col-span-2"><strong>Current Address:</strong> {selectedData.current_address || '-'}</div>
+                  <div><strong>City:</strong> {selectedData.city || '-'}</div>
+                  <div><strong>State:</strong> {selectedData.state || '-'}</div>
+                  <div><strong>Pincode:</strong> {selectedData.pincode || '-'}</div>
+                  <div><strong>Aadhar:</strong> {selectedData.aadhar_number || '-'}</div>
+                  <div><strong>PAN:</strong> {selectedData.pan_number || '-'}</div>
+                  <div><strong>Bank:</strong> {selectedData.bank_name || '-'}</div>
+                  <div><strong>Account:</strong> {selectedData.bank_account_number || '-'}</div>
+                  <div><strong>IFSC:</strong> {selectedData.ifsc_code || '-'}</div>
+                  <div><strong>UPI:</strong> {selectedData.upi_id || '-'}</div>
+                  <div><strong>Emergency Contact:</strong> {selectedData.emergency_contact_name || '-'}</div>
+                  <div><strong>Emergency Phone:</strong> {selectedData.emergency_contact_phone || '-'}</div>
                 </div>
-                <div className="flex gap-4 flex-wrap pt-4 border-t border-gray-200">
+                <div className="flex gap-4 flex-wrap">
                   {selectedData.profile_image_url && (
-                    <a href={selectedData.profile_image_url} target="_blank" className="text-blue-500 hover:underline">
+                    <a href={selectedData.profile_image_url} target="_blank" className="text-blue-400 hover:underline">
                       📷 Profile Image
                     </a>
                   )}
                   {selectedData.aadhar_document_url && (
-                    <a href={selectedData.aadhar_document_url} target="_blank" className="text-blue-500 hover:underline">
+                    <a href={selectedData.aadhar_document_url} target="_blank" className="text-blue-400 hover:underline">
                       📄 Aadhar
                     </a>
                   )}
                   {selectedData.pan_document_url && (
-                    <a href={selectedData.pan_document_url} target="_blank" className="text-blue-500 hover:underline">
+                    <a href={selectedData.pan_document_url} target="_blank" className="text-blue-400 hover:underline">
                       📄 PAN
                     </a>
                   )}
                   {selectedData.offer_letter_url && (
-                    <a href={selectedData.offer_letter_url} target="_blank" className="text-blue-500 hover:underline">
+                    <a href={selectedData.offer_letter_url} target="_blank" className="text-blue-400 hover:underline">
                       📄 Offer Letter
                     </a>
                   )}
@@ -1057,20 +1050,18 @@ const AdminEmployeeProfile: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      
-      
       {/* Super Admin Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="bg-white border-gray-200 max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="bg-black/80 backdrop-blur-xl border border-white/10 shadow-xl bg-black/80 backdrop-blur-xl border border-white/10 shadow-xl max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-gray-900">Edit Employee Data (Super Admin)</DialogTitle>
+            <DialogTitle>Edit Employee Data (Super Admin)</DialogTitle>
           </DialogHeader>
           {renderFormFields(false)}
           <DialogFooter className="mt-6">
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)} className="border-gray-300 text-gray-700">
+            <Button className="border-white/20 text-white hover:bg-white/5" onClick={() => setEditDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSuperAdminUpdate} disabled={isSaving} className="bg-blue-500 hover:bg-blue-600 text-white">
+            <Button onClick={handleSuperAdminUpdate} disabled={isSaving} className="bg-white text-black hover:bg-gray-200 font-semibold">
               {isSaving ? 'Saving...' : 'Save Changes'}
             </Button>
           </DialogFooter>

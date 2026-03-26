@@ -1,4 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+
+
+
+
+
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import ModuleLayout from '@/components/ModuleLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,12 +11,100 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Image, Users, X, Smile, Paperclip, MessageCircle, Circle, Sparkles } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import {
+  Send, Image as ImageIcon, Users, X, Smile,
+  Paperclip, MessageCircle, Circle, Sparkles,
+  ChevronLeft, MoreVertical, Phone, Video,
+  Check, CheckCheck, Mic, Camera, Loader2,
+} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { roleNames } from '@/types/auth';
 import { castToAdminProfiles } from '@/utils/adminTypeCasting';
+
+
+// ─── Styles injected once ────────────────────────────────────────────────────
+const CHAT_STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+  .chat-root * { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+  /* Wallpaper-style subtle pattern on message area */
+  .chat-bg {
+    background-color: #0a0a0f;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(99,102,241,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(244,114,182,0.05) 0%, transparent 60%),
+      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* Bubble tail — own messages */
+  .bubble-own::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: -7px;
+    width: 0; height: 0;
+    border-left: 8px solid transparent;
+    border-top: 8px solid #6366f1;
+  }
+  /* Bubble tail — others */
+  .bubble-other::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -7px;
+    width: 0; height: 0;
+    border-right: 8px solid transparent;
+    border-top: 8px solid rgba(255,255,255,0.07);
+  }
+
+  /* Smooth pop-in for new messages */
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(10px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .msg-animate { animation: msgIn 0.22s cubic-bezier(.34,1.46,.64,1) forwards; }
+
+  /* Pulse ring on online dot */
+  @keyframes onlinePing {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50%       { transform: scale(1.7); opacity: 0; }
+  }
+  .online-ping { animation: onlinePing 2s ease-in-out infinite; }
+
+  /* Input bar shimmer on focus */
+  .input-glow:focus-within {
+    box-shadow: 0 0 0 1px rgba(99,102,241,0.5), 0 0 20px rgba(99,102,241,0.1);
+  }
+
+  /* Sidebar member hover */
+  .member-row:hover .member-role-badge { opacity: 1; }
+  .member-role-badge { opacity: 0.6; transition: opacity 0.2s; }
+
+  /* Scrollbar styling */
+  .chat-scroll::-webkit-scrollbar { width: 3px; }
+  .chat-scroll::-webkit-scrollbar-track { background: transparent; }
+  .chat-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+  /* Typing indicator dots */
+  @keyframes typingDot {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30%            { transform: translateY(-4px); opacity: 1; }
+  }
+  .typing-dot:nth-child(1) { animation: typingDot 1.2s 0s infinite; }
+  .typing-dot:nth-child(2) { animation: typingDot 1.2s 0.2s infinite; }
+  .typing-dot:nth-child(3) { animation: typingDot 1.2s 0.4s infinite; }
+
+  /* Send button hover */
+  .send-btn:hover { transform: scale(1.05); }
+  .send-btn:active { transform: scale(0.95); }
+  .send-btn { transition: transform 0.15s ease; }
+`;
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface ChatMessage {
   id: string;
@@ -26,7 +119,7 @@ interface AdminProfile {
   user_id: string | null;
   name: string;
   email: string;
-  role: 'super_admin' | 'betting_admin' | 'trading_admin' | 'social_admin' | 'esports_admin';
+  role: string;
   avatar: string | null;
   is_active: boolean;
   last_login: string | null;
@@ -34,536 +127,670 @@ interface AdminProfile {
   updated_at: string;
 }
 
+
+
+
+
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+
+
+
+
+
+
+
+const ROLE_GRADIENTS: Record<string, { bg: string; text: string; dot: string }> = {
+  super_admin:   { bg: 'from-rose-500   to-orange-500',  text: 'text-rose-300',   dot: '#f43f5e' },
+  admin:         { bg: 'from-violet-500 to-blue-500',    text: 'text-violet-300', dot: '#8b5cf6' },
+  tech:          { bg: 'from-blue-500   to-cyan-500',    text: 'text-blue-300',   dot: '#3b82f6' },
+  content:       { bg: 'from-emerald-500 to-teal-500',   text: 'text-emerald-300',dot: '#10b981' },
+  design:        { bg: 'from-pink-500   to-fuchsia-500', text: 'text-pink-300',   dot: '#ec4899' },
+  moderator:     { bg: 'from-amber-500  to-yellow-500',  text: 'text-amber-300',  dot: '#f59e0b' },
+};
+
+function getRoleStyle(role: string) {
+  return ROLE_GRADIENTS[role] ?? { bg: 'from-gray-500 to-gray-600', text: 'text-gray-300', dot: '#6b7280' };
+}
+
+function getInitials(name: string) {
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+}
+
+
+
+
+
+
+
+
+
+function formatTime(date: string) {
+  return new Date(date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+
+
+
+
+
+
+
+function formatDate(date: string): string {
+  const d    = new Date(date);
+  const now  = new Date();
+  const yest = new Date(now); yest.setDate(yest.getDate() - 1);
+  if (d.toDateString() === now.toDateString())  return 'Today';
+  if (d.toDateString() === yest.toDateString()) return 'Yesterday';
+  return d.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+
+
+
+
+
+
+function getOnlineStatus(lastLogin: string | null, isMe: boolean): 'online' | 'away' | 'offline' {
+  if (isMe) return 'online';
+  if (!lastLogin) return 'offline';
+  const mins = (Date.now() - new Date(lastLogin).getTime()) / 60_000;
+  if (mins < 10) return 'online';
+  if (mins < 60) return 'away';
+  return 'offline';
+}
+
+const STATUS_COLORS = { online: '#22c55e', away: '#f59e0b', offline: '#6b7280' };
+
+// ─── Member Sidebar Row ───────────────────────────────────────────────────────
+
+const MemberRow: React.FC<{ admin: AdminProfile; isMe: boolean }> = ({ admin, isMe }) => {
+  const status = getOnlineStatus(admin.last_login, isMe);
+  const style  = getRoleStyle(admin.role);
+
+  return (
+    <div className="member-row flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-white/5 transition-all cursor-pointer group">
+      <div className="relative shrink-0">
+        <Avatar className="h-10 w-10 ring-2 ring-white/10 group-hover:ring-white/20 transition-all">
+          <AvatarImage src={admin.avatar || undefined} className="object-cover" />
+          <AvatarFallback className={`bg-gradient-to-br ${style.bg} text-white text-xs font-bold`}>
+            {getInitials(admin.name)}
+          </AvatarFallback>
+        </Avatar>
+        {/* Status dot */}
+        <span
+          className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#0a0a0f]"
+          style={{ background: STATUS_COLORS[status] }}
+        >
+          {status === 'online' && (
+            <span
+              className="online-ping absolute inset-0 rounded-full"
+              style={{ background: STATUS_COLORS.online }}
+            />
+          )}
+        </span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-white/90 truncate leading-tight">
+          {isMe ? `${admin.name} (you)` : admin.name}
+        </p>
+        <p className={`text-xs truncate ${status === 'online' ? 'text-green-400' : 'text-white/30'}`}>
+          {status === 'online' ? 'Online' : status === 'away' ? 'Away' : 'Offline'}
+        </p>
+      </div>
+      <span className={`member-role-badge text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-white/5 border border-white/10 ${style.text} shrink-0`}>
+        {(roleNames[admin.role as keyof typeof roleNames] ?? admin.role).split(' ')[0]}
+      </span>
+    </div>
+  );
+};
+
+// ─── Message Bubble ───────────────────────────────────────────────────────────
+
+const MessageBubble: React.FC<{
+  msg: ChatMessage;
+  isOwn: boolean;
+  showAvatar: boolean;
+  showName: boolean;
+  adminProfile: any;
+  onImageClick: (url: string) => void;
+}> = ({ msg, isOwn, showAvatar, showName, adminProfile, onImageClick }) => {
+  const style     = getRoleStyle(isOwn ? adminProfile?.role : msg.sender?.role ?? '');
+  const senderName = isOwn ? adminProfile?.name : msg.sender?.name ?? 'Unknown';
+  const avatar     = isOwn ? adminProfile?.avatar : msg.sender?.avatar;
+  const isImage    = msg.message.startsWith('📷 Shared an image:');
+  const imgUrl     = isImage ? msg.message.replace('📷 Shared an image: ', '') : null;
+
+
+
+
+
+
+
+
+
+
+  
+  return (
+    <div className={`msg-animate flex items-end gap-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}>
+
+
+
+
+
+
+
+      
+      {/* Avatar */}
+      <div className="shrink-0 w-8">
+        {showAvatar ? (
+          <Avatar className="h-8 w-8 ring-1 ring-white/10">
+            <AvatarImage src={avatar || undefined} className="object-cover" />
+            <AvatarFallback className={`bg-gradient-to-br ${style.bg} text-white text-[10px] font-bold`}>
+              {getInitials(senderName)}
+            </AvatarFallback>
+          </Avatar>
+        ) : null}
+      </div>
+
+      {/* Content */}
+      <div className={`flex flex-col max-w-[72%] sm:max-w-[60%] ${isOwn ? 'items-end' : 'items-start'}`}>
+        {/* Sender name + role */}
+        {showName && !isOwn && (
+          <div className="flex items-center gap-1.5 mb-1 ml-1">
+            <span className="text-xs font-semibold" style={{ color: style.dot }}>
+              {senderName}
+            </span>
+            <span className={`text-[9px] uppercase tracking-wider ${style.text} opacity-60`}>
+              {(roleNames[msg.sender?.role as keyof typeof roleNames] ?? msg.sender?.role ?? '').split(' ')[0]}
+            </span>
+          </div>
+        )}
+
+
+
+
+
+
+
+
+
+        
+        {/* Bubble */}
+        <div className={`
+          relative px-3.5 py-2.5 rounded-2xl shadow-md
+          ${isOwn
+            ? 'bubble-own bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-br-sm'
+            : 'bubble-other bg-white/[0.07] border border-white/10 text-white/90 rounded-bl-sm backdrop-blur-sm'
+          }
+        `}>
+          {isImage && imgUrl ? (
+            <div className="space-y-1.5">
+              <p className="text-xs opacity-60 mb-1">Photo</p>
+              <img
+                src={imgUrl}
+                alt="Shared"
+                className="max-w-[220px] sm:max-w-xs rounded-xl cursor-pointer hover:opacity-90 transition-opacity object-cover"
+                onClick={() => onImageClick(imgUrl)}
+              />
+            </div>
+          ) : (
+            <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{msg.message}</p>
+          )}
+        </div>
+
+        {/* Timestamp + read tick */}
+        <div className={`flex items-center gap-1 mt-1 ${isOwn ? 'flex-row-reverse mr-1' : 'ml-1'}`}>
+          <span className="text-[10px] text-white/25">{formatTime(msg.created_at)}</span>
+          {isOwn && <CheckCheck className="w-3 h-3 text-indigo-400" />}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Date Divider ─────────────────────────────────────────────────────────────
+
+const DateDivider: React.FC<{ label: string }> = ({ label }) => (
+  <div className="flex items-center gap-3 my-4 px-2">
+    <div className="flex-1 h-px bg-gradient-to-r from-transparent to-white/8" />
+    <span className="text-[10px] font-semibold text-white/25 uppercase tracking-widest px-3 py-1 rounded-full bg-white/5 border border-white/8">
+      {label}
+    </span>
+    <div className="flex-1 h-px bg-gradient-to-l from-transparent to-white/8" />
+  </div>
+);
+
+// ─── Members Panel content ────────────────────────────────────────────────────
+
+const MembersPanel: React.FC<{ admins: AdminProfile[]; currentId: string; onlineCount: number }> = ({
+  admins, currentId, onlineCount,
+}) => (
+  <div className="flex flex-col h-full bg-[#0d0d14] border-r border-white/[0.06]">
+    <div className="flex items-center gap-3 px-4 py-4 border-b border-white/[0.06]">
+      <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+        <Users className="w-4 h-4 text-indigo-400" />
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-white">Members</p>
+        <p className="text-xs text-green-400">{onlineCount} online</p>
+      </div>
+    </div>
+    <div className="flex-1 overflow-y-auto chat-scroll p-2 space-y-0.5">
+      {admins.map(admin => (
+        <MemberRow key={admin.id} admin={admin} isMe={admin.id === currentId} />
+      ))}
+    </div>
+  </div>
+);
+
+
+
+
+
+
+
+
+
+
+// ─── Main TeamChat ────────────────────────────────────────────────────────────
+
 const TeamChat: React.FC = () => {
   const { adminProfile } = useAuth();
-  const { toast } = useToast();
-  const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [admins, setAdmins] = useState<AdminProfile[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast }        = useToast();
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const [messages, setMessages]   = useState<ChatMessage[]>([]);
+  const [admins, setAdmins]       = useState<AdminProfile[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [message, setMessage]     = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [sending, setSending]     = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isTyping, setIsTyping]   = useState(false); // local fake typing indicator for polish
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef       = useRef<HTMLInputElement>(null);
+  const fileRef        = useRef<HTMLInputElement>(null);
+  const typingTimer    = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Scroll to bottom
+  const scrollBottom = useCallback((smooth = true) => {
+    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' });
+  }, []);
+
+  // ── Fetch ──────────────────────────────────────────────────────────────────
+
+  const fetchMessages = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('chat_messages')
+      .select('*, sender:admins!sender_id(name, role, avatar)')
+      .order('created_at', { ascending: true })
+      .limit(150);
+    if (!error) setMessages((data || []) as ChatMessage[]);
+    setIsLoading(false);
+  }, []);
+
+  const fetchAdmins = useCallback(async () => {
+    const { data } = await supabase
+      .from('admins')
+      .select('*')
+      .eq('is_active', true)
+      .order('name');
+    if (data) setAdmins(castToAdminProfiles(data));
+  }, []);
 
   useEffect(() => {
     fetchMessages();
     fetchAdmins();
+
+    // Update own last_login
+    if (adminProfile) {
+      supabase.from('admins').update({ last_login: new Date().toISOString() }).eq('id', adminProfile.id);
+    }
+
+
+
+
+
+
+
+
+
     
+    // Realtime
     const channel = supabase
       .channel('chat-messages')
-      .on('postgres_changes', 
-        { event: 'INSERT', schema: 'public', table: 'chat_messages' },
-        () => fetchMessages()
-      )
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, () => fetchMessages())
       .subscribe();
 
-    updateLastLogin();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchMessages, fetchAdmins, adminProfile]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    scrollBottom(!isLoading);
+  }, [messages, isLoading, scrollBottom]);
 
-  const updateLastLogin = async () => {
-    if (!adminProfile) return;
-    
-    try {
-      await supabase
-        .from('admins')
-        .update({ last_login: new Date().toISOString() })
-        .eq('id', adminProfile.id);
-    } catch (error) {
-      console.error('Error updating last login:', error);
-    }
-  };
+  // ── Send text ──────────────────────────────────────────────────────────────
 
-  const fetchMessages = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('chat_messages')
-        .select(`
-          *,
-          sender:admins!sender_id(name, role, avatar)
-        `)
-        .order('created_at', { ascending: true })
-        .limit(100);
-
-      if (error) throw error;
-      setMessages((data || []) as ChatMessage[]);
-    } catch (error) {
-      console.error('Error fetching messages:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchAdmins = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('admins')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-
-      if (error) throw error;
-      
-      const typedAdmins = castToAdminProfiles(data || []);
-      setAdmins(typedAdmins);
-    } catch (error) {
-      console.error('Error fetching admins:', error);
-    }
-  };
-
-  const sendMessage = async () => {
-    if (!message.trim() || !adminProfile) return;
-    
+  const sendMessage = useCallback(async () => {
+    const text = message.trim();
+    if (!text || !adminProfile || sending) return;
+    setSending(true);
+    setMessage('');
     try {
       const { error } = await supabase
         .from('chat_messages')
-        .insert({
-          sender_id: adminProfile.id,
-          message: message.trim()
-        } as any);
-
+        .insert({ sender_id: adminProfile.id, message: text } as any);
       if (error) throw error;
-      
-      setMessage('');
-    } catch (error: any) {
-      console.error('Error sending message:', error);
-      toast({
-        title: "Error",
-        description: "Failed to send message",
-        variant: "destructive"
-      });
+    } catch {
+      toast({ title: 'Failed to send', variant: 'destructive' });
+      setMessage(text); // restore
+    } finally {
+      setSending(false);
+      inputRef.current?.focus();
     }
+  }, [message, adminProfile, sending, toast]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  // Fake typing indicator when the input has content
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMessage(e.target.value);
+  };
+
+
+
+
+
+
+
+
+
+  
+  // ── Image upload ───────────────────────────────────────────────────────────
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file || !adminProfile) return;
-
     if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Invalid File",
-        description: "Please select an image file",
-        variant: "destructive"
-      });
-      return;
+      toast({ title: 'Please select an image', variant: 'destructive' }); return;
     }
-
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'Image must be under 5 MB', variant: 'destructive' }); return;
+    }
     setUploading(true);
-
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `chat_images/${adminProfile.id}_${Date.now()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('uploads')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('uploads')
-        .getPublicUrl(fileName);
-
-      const { error: messageError } = await supabase
-        .from('chat_messages')
-        .insert({
-          sender_id: adminProfile.id,
-          message: `📷 Shared an image: ${publicUrl}`
-        } as any);
-
-      if (messageError) throw messageError;
-
-      await supabase
-        .from('uploaded_files')
-        .insert({
-          name: file.name,
-          file_path: fileName,
-          file_size: file.size,
-          mime_type: file.type,
-          uploaded_by: adminProfile.id
-        } as any);
-
-      toast({
-        title: "Image Shared",
-        description: "Image has been shared to the chat"
-      });
-
-    } catch (error: any) {
-      console.error('Error uploading image:', error);
-      toast({
-        title: "Upload Failed",
-        description: "Failed to upload image",
-        variant: "destructive"
-      });
+      const ext      = file.name.split('.').pop();
+      const fileName = `chat_images/${adminProfile.id}_${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from('uploads').upload(fileName, file);
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = supabase.storage.from('uploads').getPublicUrl(fileName);
+      await supabase.from('chat_messages').insert({
+        sender_id: adminProfile.id,
+        message:   `📷 Shared an image: ${publicUrl}`,
+      } as any);
+      await supabase.from('uploaded_files').insert({
+        name: file.name, file_path: fileName,
+        file_size: file.size, mime_type: file.type, uploaded_by: adminProfile.id,
+      } as any);
+    } catch {
+      toast({ title: 'Upload failed', variant: 'destructive' });
     } finally {
       setUploading(false);
-      if (event.target) {
-        event.target.value = '';
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  // ── Derived ────────────────────────────────────────────────────────────────
+
+  const onlineCount = useMemo(() =>
+    admins.filter(a => getOnlineStatus(a.last_login, a.id === adminProfile?.id) === 'online').length,
+    [admins, adminProfile]
+  );
+
+  // Group messages by date AND detect consecutive same-sender runs
+  const groupedMessages = useMemo(() => {
+    const groups: { date: string; msgs: (ChatMessage & { showAvatar: boolean; showName: boolean })[] }[] = [];
+    let lastDate = '';
+    messages.forEach((msg, i) => {
+      const date     = formatDate(msg.created_at);
+      const prevMsg  = messages[i - 1];
+      const nextMsg  = messages[i + 1];
+      const sameAsPrev = prevMsg?.sender_id === msg.sender_id && formatDate(prevMsg.created_at) === date;
+      const sameAsNext = nextMsg?.sender_id === msg.sender_id && formatDate(nextMsg.created_at) === date;
+      const showAvatar = !sameAsNext; // show avatar on last of a consecutive run
+      const showName   = !sameAsPrev;
+
+      if (date !== lastDate) {
+        groups.push({ date, msgs: [] });
+        lastDate = date;
       }
-    }
-  };
-
-  const formatTime = (date: string) => {
-    return new Date(date).toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true 
+      groups[groups.length - 1].msgs.push({ ...msg, showAvatar, showName });
     });
-  };
-
-  const formatDate = (date: string) => {
-    const msgDate = new Date(date);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    if (msgDate.toDateString() === today.toDateString()) {
-      return 'Today';
-    } else if (msgDate.toDateString() === yesterday.toDateString()) {
-      return 'Yesterday';
-    } else {
-      return msgDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    }
-  };
-
-  const getRoleColor = (role: string) => {
-    const colors = {
-      super_admin: 'bg-gradient-to-r from-red-500/20 to-orange-500/20 text-red-300 border-red-500/30',
-      betting_admin: 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-300 border-blue-500/30',
-      trading_admin: 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-300 border-green-500/30',
-      social_admin: 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border-purple-500/30',
-      esports_admin: 'bg-gradient-to-r from-orange-500/20 to-yellow-500/20 text-orange-300 border-orange-500/30'
-    };
-    return colors[role as keyof typeof colors] || 'bg-muted text-muted-foreground';
-  };
-
-  const getStatusColor = (lastLogin: string | null, adminId: string) => {
-    if (adminProfile && adminId === adminProfile.id) {
-      return 'bg-green-500';
-    }
-
-    if (!lastLogin) return 'bg-gray-500';
-    
-    const lastLoginDate = new Date(lastLogin);
-    const now = new Date();
-    const diffMinutes = (now.getTime() - lastLoginDate.getTime()) / (1000 * 60);
-    
-    if (diffMinutes < 10) return 'bg-green-500';
-    if (diffMinutes < 60) return 'bg-yellow-500';
-    return 'bg-gray-500';
-  };
-
-  const getStatusText = (lastLogin: string | null, adminId: string) => {
-    if (adminProfile && adminId === adminProfile.id) {
-      return 'Online';
-    }
-
-    if (!lastLogin) return 'Offline';
-    
-    const lastLoginDate = new Date(lastLogin);
-    const now = new Date();
-    const diffMinutes = (now.getTime() - lastLoginDate.getTime()) / (1000 * 60);
-    
-    if (diffMinutes < 10) return 'Online';
-    if (diffMinutes < 60) return 'Away';
-    return 'Offline';
-  };
-
-  // Group messages by date
-  const groupedMessages = messages.reduce((groups: { [key: string]: ChatMessage[] }, message) => {
-    const date = formatDate(message.created_at);
-    if (!groups[date]) {
-      groups[date] = [];
-    }
-    groups[date].push(message);
     return groups;
-  }, {});
+  }, [messages]);
+
+
+
+
+
+
+
+
+
+  
+  // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <ModuleLayout
-      title="Team Chat"
-      description="Real-time team communication"
-    >
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-220px)] min-h-[600px]">
-        {/* Team Members Sidebar */}
-        <div className="hidden lg:block">
-          <div className="h-full rounded-2xl bg-[rgba(0,0,0,0.6)] border border-[rgba(255,255,255,0.15)] backdrop-blur-xl overflow-hidden">
-            {/* Sidebar Header */}
-            <div className="p-4 border-b border-[rgba(255,255,255,0.1)]">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20">
-                  <Users className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Team Members</h3>
-                  <p className="text-xs text-muted-foreground">{admins.filter(a => getStatusText(a.last_login, a.id) === 'Online').length} online</p>
-                </div>
-              </div>
+    <>
+      <style>{CHAT_STYLES}</style>
+      <div className="chat-root">
+        <ModuleLayout title="Team Chat" description="Real-time team communication">
+          <div className="flex rounded-2xl overflow-hidden border border-white/[0.08] shadow-2xl"
+               style={{ height: 'calc(100vh - 200px)', minHeight: 560 }}>
+
+            {/* ── Desktop Sidebar ── */}
+            <div className="hidden lg:flex flex-col w-64 shrink-0">
+              <MembersPanel admins={admins} currentId={adminProfile?.id ?? ''} onlineCount={onlineCount} />
             </div>
 
-            {/* Members List */}
-            <ScrollArea className="h-[calc(100%-80px)]">
-              <div className="p-3 space-y-2">
-                {admins.map((admin) => (
-                  <div 
-                    key={admin.id} 
-                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-[rgba(255,255,255,0.05)] transition-all duration-300 cursor-pointer group"
+            {/* ── Main Chat Column ── */}
+            <div className="flex flex-col flex-1 min-w-0">
+
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-[#0d0d14] shrink-0">
+                <div className="flex items-center gap-3">
+                  {/* Mobile members sheet */}
+                  <Sheet>
+                    <SheetTrigger asChild>
+                      <Button variant="ghost" size="icon" className="lg:hidden h-8 w-8 text-white/50 hover:text-white">
+                        <Users className="w-4 h-4" />
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="p-0 w-72 border-white/[0.06] bg-[#0d0d14]">
+                      <div className="h-full">
+                        <MembersPanel admins={admins} currentId={adminProfile?.id ?? ''} onlineCount={onlineCount} />
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+
+                  {/* Chat identity */}
+                  <div className="relative">
+                    <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                      <MessageCircle className="w-4 h-4 text-white" />
+                    </div>
+                    <Sparkles className="absolute -top-1 -right-1 w-3.5 h-3.5 text-yellow-400 animate-pulse" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-bold text-white leading-tight">THRYLOS Team</h2>
+                    <p className="text-[11px] text-green-400 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />
+                      {onlineCount} online · {admins.length} members
+                    </p>
+                  </div>
+                </div>
+
+                {/* Header actions */}
+                <div className="flex items-center gap-1">
+                  <Badge className="bg-indigo-500/15 text-indigo-300 border border-indigo-500/25 text-[10px] px-2 py-0.5 animate-pulse">
+                    Live
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Messages */}
+              <div className="chat-bg flex-1 overflow-y-auto chat-scroll px-3 py-4 space-y-1">
+                {isLoading ? (
+                  // Skeleton
+                  <div className="space-y-4 pt-4">
+                    {[...Array(6)].map((_, i) => (
+                      <div key={i} className={`flex gap-3 items-end animate-pulse ${i % 2 === 0 ? '' : 'flex-row-reverse'}`}>
+                        <div className="w-8 h-8 rounded-full bg-white/5 shrink-0" />
+                        <div className={`rounded-2xl bg-white/5 ${i % 2 === 0 ? 'w-44 h-10' : 'w-32 h-8'}`} />
+                      </div>
+                    ))}
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full gap-4 text-center px-6">
+                    <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-indigo-500/20 to-violet-600/20 border border-indigo-500/20 flex items-center justify-center">
+                      <MessageCircle className="w-7 h-7 text-indigo-400" />
+                    </div>
+                    <div>
+                      <p className="text-white/80 font-semibold">No messages yet</p>
+                      <p className="text-white/30 text-sm mt-0.5">Be the first to say something! 👋</p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {groupedMessages.map(({ date, msgs }) => (
+                      <div key={date}>
+                        <DateDivider label={date} />
+                        <div className="space-y-1">
+                          {msgs.map(msg => (
+                            <MessageBubble
+                              key={msg.id}
+                              msg={msg}
+                              isOwn={msg.sender_id === adminProfile?.id}
+                              showAvatar={msg.showAvatar}
+                              showName={msg.showName}
+                              adminProfile={adminProfile}
+                              onImageClick={setSelectedImage}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </>
+                )}
+              </div>
+
+
+
+
+
+
+
+
+              
+
+              {/* Input bar */}
+              <div className="shrink-0 px-3 py-3 border-t border-white/[0.06] bg-[#0d0d14]">
+                <div className="input-glow flex items-center gap-2 bg-white/5 border border-white/10 rounded-2xl px-2 py-1.5 transition-all">
+                  {/* Attach */}
+                  <button
+                    className="h-8 w-8 rounded-xl flex items-center justify-center text-white/30 hover:text-white/70 hover:bg-white/5 transition-all shrink-0"
+                    onClick={() => fileRef.current?.click()}
+                    disabled={uploading}
                   >
-                    <div className="relative">
-                      <Avatar className="h-10 w-10 border-2 border-[rgba(255,255,255,0.1)] group-hover:border-primary/50 transition-all">
-                        <AvatarImage src={admin.avatar || undefined} />
-                        <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-primary-foreground text-sm font-medium">
-                          {admin.name.split(' ').map(n => n[0]).join('')}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-background ${getStatusColor(admin.last_login, admin.id)}`}>
-                        {getStatusText(admin.last_login, admin.id) === 'Online' && (
-                          <span className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-75" />
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{admin.name}</p>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs ${getStatusText(admin.last_login, admin.id) === 'Online' ? 'text-green-400' : 'text-muted-foreground'}`}>
-                          {getStatusText(admin.last_login, admin.id)}
-                        </span>
-                      </div>
-                    </div>
-                    <Badge className={`text-[10px] px-2 py-0.5 ${getRoleColor(admin.role)}`}>
-                      {roleNames[admin.role as keyof typeof roleNames]?.split(' ')[0]}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-        </div>
+                    {uploading
+                      ? <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
+                      : <Paperclip className="w-4 h-4" />
+                    }
+                  </button>
 
-        {/* Chat Area */}
-        <div className="lg:col-span-3 flex flex-col h-full">
-          <div className="flex-1 flex flex-col rounded-2xl bg-[rgba(0,0,0,0.6)] border border-[rgba(255,255,255,0.15)] backdrop-blur-xl overflow-hidden">
-            {/* Chat Header */}
-            <div className="flex items-center justify-between p-4 border-b border-[rgba(255,255,255,0.1)] bg-gradient-to-r from-primary/5 to-secondary/5">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20">
-                    <MessageCircle className="w-5 h-5 text-primary" />
-                  </div>
-                  <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-accent animate-pulse" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-foreground">General Chat</h2>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Circle className="w-2 h-2 fill-green-500 text-green-500" />
-                    {admins.filter(a => getStatusText(a.last_login, a.id) === 'Online').length} members online
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge className="bg-gradient-to-r from-primary to-secondary text-primary-foreground animate-pulse">
-                  Live
-                </Badge>
-              </div>
-            </div>
+                  {/* Camera */}
+                  <button
+                    className="h-8 w-8 rounded-xl flex items-center justify-center text-white/30 hover:text-white/70 hover:bg-white/5 transition-all shrink-0"
+                    onClick={() => fileRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    <Camera className="w-4 h-4" />
+                  </button>
 
-            {/* Messages Area */}
-            <ScrollArea className="flex-1 p-4">
-              {isLoading ? (
-                <div className="space-y-4">
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className="flex gap-3 animate-pulse">
-                      <div className="w-10 h-10 rounded-full bg-muted" />
-                      <div className="flex-1 space-y-2">
-                        <div className="h-4 bg-muted rounded w-1/4" />
-                        <div className="h-10 bg-muted rounded w-3/4" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center">
-                  <div className="p-6 rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 mb-4">
-                    <MessageCircle className="w-12 h-12 text-muted-foreground" />
-                  </div>
-                  <h3 className="text-lg font-medium text-foreground mb-2">No messages yet</h3>
-                  <p className="text-sm text-muted-foreground">Be the first to start the conversation!</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {Object.entries(groupedMessages).map(([date, msgs]) => (
-                    <div key={date}>
-                      {/* Date Separator */}
-                      <div className="flex items-center gap-4 my-6">
-                        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.1)] to-transparent" />
-                        <span className="text-xs text-muted-foreground px-3 py-1 rounded-full bg-[rgba(255,255,255,0.05)]">
-                          {date}
-                        </span>
-                        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.1)] to-transparent" />
-                      </div>
-
-                      {/* Messages */}
-                      <div className="space-y-4">
-                        {msgs.map((msg) => {
-                          const isOwn = msg.sender_id === adminProfile?.id;
-                          
-                          return (
-                            <div 
-                              key={msg.id} 
-                              className={`flex gap-3 ${isOwn ? 'flex-row-reverse' : ''}`}
-                            >
-                              <Avatar className="h-9 w-9 border-2 border-[rgba(255,255,255,0.1)] flex-shrink-0">
-                                <AvatarImage src={isOwn ? adminProfile?.avatar : msg.sender?.avatar} />
-                                <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-primary-foreground text-xs">
-                                  {isOwn 
-                                    ? adminProfile?.name?.split(' ').map(n => n[0]).join('') || 'U'
-                                    : msg.sender?.name?.split(' ').map(n => n[0]).join('') || 'U'
-                                  }
-                                </AvatarFallback>
-                              </Avatar>
-                              
-                              <div className={`flex flex-col max-w-[70%] ${isOwn ? 'items-end' : 'items-start'}`}>
-                                <div className={`flex items-center gap-2 mb-1 ${isOwn ? 'flex-row-reverse' : ''}`}>
-                                  <span className="text-sm font-medium text-foreground">
-                                    {isOwn ? (adminProfile?.name || 'You') : (msg.sender?.name || 'Unknown')}
-                                  </span>
-                                  <Badge className={`text-[10px] px-1.5 py-0 ${getRoleColor(isOwn ? (adminProfile?.role || '') : (msg.sender?.role || ''))}`}>
-                                    {isOwn 
-                                      ? roleNames[adminProfile?.role as keyof typeof roleNames]?.split(' ')[0] || 'User'
-                                      : roleNames[msg.sender?.role as keyof typeof roleNames]?.split(' ')[0] || 'User'
-                                    }
-                                  </Badge>
-                                </div>
-                                
-                                <div 
-                                  className={`
-                                    relative p-3 rounded-2xl
-                                    ${isOwn 
-                                      ? 'bg-gradient-to-br from-primary to-secondary text-primary-foreground rounded-br-md' 
-                                      : 'bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] text-foreground rounded-bl-md'
-                                    }
-                                    shadow-lg
-                                  `}
-                                >
-                                  {msg.message.includes('📷 Shared an image:') ? (
-                                    <div className="space-y-2">
-                                      <p className="text-sm opacity-80">Shared an image</p>
-                                      <img 
-                                        src={msg.message.replace('📷 Shared an image: ', '')}
-                                        alt="Shared image"
-                                        className="max-w-xs rounded-lg cursor-pointer hover:opacity-80 transition-opacity border border-[rgba(255,255,255,0.1)]"
-                                        onClick={() => setSelectedImage(msg.message.replace('📷 Shared an image: ', ''))}
-                                      />
-                                    </div>
-                                  ) : (
-                                    <p className="text-sm leading-relaxed">{msg.message}</p>
-                                  )}
-                                </div>
-                                
-                                <span className={`text-[10px] text-muted-foreground mt-1 ${isOwn ? 'mr-1' : 'ml-1'}`}>
-                                  {formatTime(msg.created_at)}
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                  <div ref={messagesEndRef} />
-                </div>
-              )}
-            </ScrollArea>
-
-            {/* Message Input */}
-            <div className="p-4 border-t border-[rgba(255,255,255,0.1)] bg-gradient-to-r from-[rgba(0,0,0,0.3)] to-[rgba(0,0,0,0.3)]">
-              <div className="flex items-center gap-3">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  id="image-upload"
-                  disabled={uploading}
-                />
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-10 w-10 rounded-xl hover:bg-[rgba(255,255,255,0.1)] text-muted-foreground hover:text-foreground transition-all"
-                  onClick={() => document.getElementById('image-upload')?.click()}
-                  disabled={uploading}
-                >
-                  <Paperclip className="w-5 h-5" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-10 w-10 rounded-xl hover:bg-[rgba(255,255,255,0.1)] text-muted-foreground hover:text-foreground transition-all"
-                  onClick={() => document.getElementById('image-upload')?.click()}
-                  disabled={uploading}
-                >
-                  <Image className="w-5 h-5" />
-                </Button>
-                
-                <div className="flex-1 relative">
-                  <Input
-                    placeholder="Type your message..."
+                  {/* Text input */}
+                  <input
+                    ref={inputRef}
+                    className="flex-1 min-w-0 bg-transparent text-sm text-white placeholder:text-white/25 outline-none py-1.5 px-1"
+                    placeholder="Message THRYLOS Team…"
                     value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                    className="h-12 bg-[rgba(0,0,0,0.4)] border-[rgba(255,255,255,0.15)] rounded-xl pl-4 pr-12 text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all"
+                    onChange={handleInput}
+                    onKeyDown={handleKeyDown}
                   />
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-lg hover:bg-[rgba(255,255,255,0.1)]"
+
+                  {/* Emoji placeholder */}
+                  <button className="h-8 w-8 rounded-xl flex items-center justify-center text-white/30 hover:text-white/70 hover:bg-white/5 transition-all shrink-0">
+                    <Smile className="w-4 h-4" />
+                  </button>
+
+                  {/* Send */}
+                  <button
+                    className={`send-btn h-9 w-9 rounded-xl flex items-center justify-center shrink-0 shadow-lg transition-all ${
+                      message.trim()
+                        ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-indigo-500/30'
+                        : 'bg-white/5 text-white/20 cursor-default'
+                    }`}
+                    onClick={sendMessage}
+                    disabled={!message.trim() || sending}
                   >
-                    <Smile className="w-5 h-5 text-muted-foreground" />
-                  </Button>
+                    {sending
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <Send className="w-4 h-4" />
+                    }
+                  </button>
                 </div>
-                
-                <Button 
-                  onClick={sendMessage}
-                  className="h-12 px-6 rounded-xl bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-primary/40 hover:scale-105"
-                  disabled={!message.trim()}
-                >
-                  <Send className="w-5 h-5" />
-                </Button>
+
+                {/* Hidden file input */}
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
               </div>
             </div>
           </div>
-        </div>
+        </ModuleLayout>
       </div>
 
-      {/* Image Modal */}
+
+
+
+
+
+
+
+
+      
+      {/* ── Image lightbox ── */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-black/95 border-[rgba(255,255,255,0.1)]">
-          <DialogClose className="absolute right-4 top-4 z-10 rounded-full p-2 bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.2)] transition-all">
-            <X className="h-5 w-5 text-white" />
-            <span className="sr-only">Close</span>
+        <DialogContent className="max-w-3xl max-h-[90vh] p-0 bg-black/98 border-white/10 overflow-hidden rounded-2xl">
+          <DialogClose className="absolute right-3 top-3 z-10 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all">
+            <X className="h-4 w-4 text-white" />
           </DialogClose>
           {selectedImage && (
-            <img 
-              src={selectedImage} 
-              alt="Full view" 
-              className="w-full h-full object-contain rounded-lg"
+            <img
+              src={selectedImage}
+              alt="Full view"
+              className="w-full max-h-[90vh] object-contain rounded-2xl"
             />
           )}
         </DialogContent>
       </Dialog>
-    </ModuleLayout>
+    </>
   );
 };
+
+
+
+
+
 
 export default TeamChat;
