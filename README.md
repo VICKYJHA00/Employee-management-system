@@ -115,12 +115,12 @@
 
 ## 🏢 Company
 
-- **Brand:** Thrylos
-- **Powered By:** Kavya Enterprises
+- **Brand:** THRYLOS INDIA
+- **Powered By:** THRYLOS INDIA
 - **Registration:** MSME / UDYAM Registered
 - **Country:** India
-- **Contact:** thrylosindia@gmail.com
-- **Website:** https://thrylos.in
+- **Contact:** support@thrylos.in
+- **Website:** https://thrylos.in / https://thrylosindia.in / https://thrylosauth.in
 
 
 
