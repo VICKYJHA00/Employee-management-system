@@ -2,20 +2,26 @@
   <img src="https://github.com/user-attachments/assets/4e805623-2f52-4b59-9a46-f51c651fe65e" alt="Thrylos" width="400" />
 </p>
 <p align="center">
-  <strong>Competitive Esports & Skill-Based Gaming Platform</strong>
+  <strong>Admin Management Portal for THRYLOS INDIA</strong>
 </p>
 
 **Thrylos** is a full-stack esports platform for hosting competitive tournaments, managing player registrations, handling UPI payments, and providing a seamless experience for players, organizers, and admins — built with fair play, scalability, and Indian compliance in mind.
 
 > ⚠️ Thrylos supports **only skill-based games**. No gambling, betting, or chance-based activities.
 
+
+
 ---
+
+
 
 ## 🌐 Live Platform
 
 - **URL:** https://admin.thrylos.in
-- **Type:** Web-based esports tournament system
-- **Audience:** Competitive gamers, tournament organizers, esports communities
+- **Type:** Web-based admin management portal
+- **Audience:** Just Admins
+
+
 
 ---
 
@@ -70,6 +76,8 @@
 | Backend | Supabase (Auth, PostgreSQL, Realtime) |
 | Payments | UPI QR flow with manual verification |
 | Hosting | Netlify |
+| Domain | Godaddy |
+| API | Brevo ( For Emails ) |
 
 ---
 
@@ -99,7 +107,11 @@
 - Responsible Gaming Policy
 - Game of Skill Disclaimer
 
+
+
 ---
+
+
 
 ## 🏢 Company
 
@@ -110,7 +122,11 @@
 - **Contact:** thrylosindia@gmail.com
 - **Website:** https://thrylos.in
 
+
+
 ---
+
+
 
 ## 🤝 Contributing
 
@@ -119,10 +135,14 @@
 3. Commit with clear messages
 4. Submit a pull request
 
+
+
 ---
+
+
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/160c433a-e006-42ee-8923-f6360223e116" alt="Thrylos" width="220" />
 </p>
 
-© 2026 **Thrylos India**. All rights reserved.
+© 2026 **THRYLOS INDIA**. All rights reserved.
