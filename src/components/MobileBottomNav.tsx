@@ -21,18 +21,20 @@ const MobileBottomNav: React.FC = () => {
   ];
 
   return (
-    <div>
-      <div className="flex justify-around">
+    <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-white/10 px-2 py-1 z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom, 8px)' }}>
+      <div className="flex justify-around items-end">
         {navItems.map((item) => {
           const active = isActive(item.path);
           return (
             <button
               key={item.path}
               onClick={() => handleNavigate(item.path)}
-              className={active ? 'text-blue-500' : 'text-gray-500'}
+              className={`flex flex-col items-center gap-0.5 px-3 py-2 transition-colors ${
+                active ? 'text-blue-500' : 'text-gray-500'
+              }`}
             >
-              <item.icon />
-              <span>{item.label}</span>
+              <item.icon className="w-5 h-5" />
+              <span className="text-[10px] font-medium">{item.label}</span>
             </button>
           );
         })}
